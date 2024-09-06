@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1086251428669",
+    "project_id": "monday-d7ae4",
+    "storage_bucket": "monday-d7ae4.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1086251428669:android:1bd3fac576540ba90a7354",
+        "android_client_info": {
+          "package_name": "com.yourdomain.aibookwriter"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDzdGn7HHZqO03PTUae1A4Y_M2U4MfTC2E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
