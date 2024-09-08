@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'book_writing_screen.dart';
 import 'book_reader_screen.dart';
 
 class UserProfileScreen extends StatefulWidget {
@@ -24,11 +23,16 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   List<Map<String, dynamic>> _userBooks = [];
   List<Map<String, dynamic>> _userReviews = [];
   bool _isLoading = true;
+  bool _isEditing = false;
+  late TextEditingController _displayNameController;
+  late TextEditingController _bioController;
 
   @override
   void initState() {
     super.initState();
     _userId = widget.userId ?? _auth.currentUser!.uid;
+    _displayNameController = TextEditingController();
+    _bioController = TextEditingController();
     _loadUserData();
   }
 
@@ -38,6 +42,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       // Load user data
       DocumentSnapshot userDoc = await _firestore.collection('users').doc(_userId).get();
       _userData = userDoc.data() as Map<String, dynamic>;
+      _displayNameController.text = _userData['displayName'] ?? '';
+      _bioController.text = _userData['bio'] ?? '';
 
       // Load user's books
       QuerySnapshot booksSnapshot = await _firestore.collection('books')
@@ -60,6 +66,24 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     }
   }
 
+  Future<void> _saveProfile() async {
+    try {
+      await _firestore.collection('users').doc(_userId).update({
+        'displayName': _displayNameController.text,
+        'bio': _bioController.text,
+      });
+      setState(() {
+        _userData['displayName'] = _displayNameController.text;
+        _userData['bio'] = _bioController.text;
+        _isEditing = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Profile updated successfully')));
+    } catch (e) {
+      print('Error updating profile: $e');
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to update profile')));
+    }
+  }
+
   Widget _buildRatingStars(double rating) {
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -78,6 +102,19 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(_isLoading ? 'Loading...' : 'Profile: ${_userData['displayName'] ?? 'User'}'),
+        actions: [
+          if (_userId == _auth.currentUser!.uid)
+            IconButton(
+              icon: Icon(_isEditing ? Icons.save : Icons.edit),
+              onPressed: () {
+                if (_isEditing) {
+                  _saveProfile();
+                } else {
+                  setState(() => _isEditing = true);
+                }
+              },
+            ),
+        ],
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
@@ -99,7 +136,23 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       ),
                     ),
                     SizedBox(height: 16),
-                    Text('Books Published', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                    if (_isEditing) ...[
+                      TextField(
+                        controller: _displayNameController,
+                        decoration: InputDecoration(labelText: 'Display Name'),
+                      ),
+                      TextField(
+                        controller: _bioController,
+                        decoration: InputDecoration(labelText: 'Bio'),
+                        maxLines: 3,
+                      ),
+                    ] else ...[
+                      Text(_userData['displayName'] ?? 'User', style: Theme.of(context).textTheme.headlineMedium),
+                      SizedBox(height: 8),
+                      Text(_userData['bio'] ?? 'No bio available', style: Theme.of(context).textTheme.bodyLarge),
+                    ],
+                    SizedBox(height: 24),
+                    Text('Books Published', style: Theme.of(context).textTheme.titleLarge),
                     SizedBox(height: 8),
                     _userBooks.isEmpty
                         ? Text('No books published yet.')
@@ -119,7 +172,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                             )).toList(),
                           ),
                     SizedBox(height: 24),
-                    Text('Reviews Written', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                    Text('Reviews Written', style: Theme.of(context).textTheme.titleLarge),
                     SizedBox(height: 8),
                     _userReviews.isEmpty
                         ? Text('No reviews written yet.')
@@ -134,15 +187,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 ),
               ),
             ),
-      floatingActionButton: _userId == _auth.currentUser!.uid
-          ? FloatingActionButton(
-              child: Icon(Icons.edit),
-              onPressed: () {
-                // Navigate to edit profile screen
-                // TODO: Implement edit profile functionality
-              },
-            )
-          : null,
     );
   }
 }

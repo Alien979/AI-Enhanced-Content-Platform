@@ -66,6 +66,9 @@ class _BookConfigScreenState extends State<BookConfigScreen> {
       });
     } catch (e) {
       print('Error loading book data: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error loading book data. Please try again.')),
+      );
       setState(() => _isLoading = false);
     }
   }
@@ -91,6 +94,9 @@ class _BookConfigScreenState extends State<BookConfigScreen> {
       return await ref.getDownloadURL();
     } catch (e) {
       print('Error uploading image: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error uploading image. Please try again.')),
+      );
       return null;
     }
   }
@@ -140,10 +146,13 @@ class _BookConfigScreenState extends State<BookConfigScreen> {
           await _firestore.collection('books').doc(widget.bookId).update(bookData);
           Navigator.pop(context);
         }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Book saved successfully!')),
+        );
       } catch (e) {
         print('Error saving book: $e');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error saving book: $e')),
+          SnackBar(content: Text('Error saving book. Please try again.')),
         );
       } finally {
         setState(() => _isLoading = false);
@@ -176,33 +185,55 @@ class _BookConfigScreenState extends State<BookConfigScreen> {
                             decoration: BoxDecoration(
                               color: Colors.grey[200],
                               border: Border.all(color: Colors.grey),
+                              borderRadius: BorderRadius.circular(8),
                             ),
                             child: _imageBytes != null
-                                ? Image.memory(_imageBytes!, fit: BoxFit.cover)
+                                ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: Image.memory(_imageBytes!, fit: BoxFit.cover),
+                                  )
                                 : _imageUrl != null
-                                    ? Image.network(_imageUrl!, fit: BoxFit.cover)
-                                    : Icon(Icons.add_photo_alternate, size: 50),
+                                    ? ClipRRect(
+                                        borderRadius: BorderRadius.circular(8),
+                                        child: Image.network(_imageUrl!, fit: BoxFit.cover),
+                                      )
+                                    : Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Icon(Icons.add_photo_alternate, size: 50),
+                                          Text('Add Cover Image', textAlign: TextAlign.center),
+                                        ],
+                                      ),
                           ),
                         ),
                       ),
                       SizedBox(height: 16),
                       TextFormField(
                         initialValue: _title,
-                        decoration: InputDecoration(labelText: 'Book Title'),
+                        decoration: InputDecoration(
+                          labelText: 'Book Title',
+                          border: OutlineInputBorder(),
+                        ),
                         validator: (value) => value!.isEmpty ? 'Please enter a title' : null,
                         onSaved: (value) => _title = value!,
                       ),
                       SizedBox(height: 16),
                       TextFormField(
                         initialValue: _summary,
-                        decoration: InputDecoration(labelText: 'Book Summary'),
+                        decoration: InputDecoration(
+                          labelText: 'Book Summary',
+                          border: OutlineInputBorder(),
+                        ),
                         maxLines: 3,
                         validator: (value) => value!.isEmpty ? 'Please enter a summary' : null,
                         onSaved: (value) => _summary = value!,
                       ),
                       SizedBox(height: 16),
                       DropdownButtonFormField(
-                        decoration: InputDecoration(labelText: 'Genre'),
+                        decoration: InputDecoration(
+                          labelText: 'Genre',
+                          border: OutlineInputBorder(),
+                        ),
                         value: _genre,
                         items: _genres.map((genre) {
                           return DropdownMenuItem(value: genre, child: Text(genre));
@@ -212,14 +243,20 @@ class _BookConfigScreenState extends State<BookConfigScreen> {
                       SizedBox(height: 16),
                       TextFormField(
                         initialValue: _chapterCount.toString(),
-                        decoration: InputDecoration(labelText: 'Number of Chapters'),
+                        decoration: InputDecoration(
+                          labelText: 'Number of Chapters',
+                          border: OutlineInputBorder(),
+                        ),
                         keyboardType: TextInputType.number,
                         validator: (value) => int.tryParse(value!) == null ? 'Please enter a valid number' : null,
                         onSaved: (value) => _chapterCount = int.parse(value!),
                       ),
                       SizedBox(height: 16),
                       DropdownButtonFormField(
-                        decoration: InputDecoration(labelText: 'Target Audience'),
+                        decoration: InputDecoration(
+                          labelText: 'Target Audience',
+                          border: OutlineInputBorder(),
+                        ),
                         value: _targetAudience,
                         items: _audiences.map((audience) {
                           return DropdownMenuItem(value: audience, child: Text(audience));
@@ -228,7 +265,10 @@ class _BookConfigScreenState extends State<BookConfigScreen> {
                       ),
                       SizedBox(height: 16),
                       DropdownButtonFormField(
-                        decoration: InputDecoration(labelText: 'Language'),
+                        decoration: InputDecoration(
+                          labelText: 'Language',
+                          border: OutlineInputBorder(),
+                        ),
                         value: _language,
                         items: _languages.map((language) {
                           return DropdownMenuItem(value: language, child: Text(language));
@@ -251,12 +291,14 @@ class _BookConfigScreenState extends State<BookConfigScreen> {
                               controller: _tagController,
                               decoration: InputDecoration(
                                 hintText: 'Add a tag',
+                                border: OutlineInputBorder(),
                               ),
                               onSubmitted: (_) => _addTag(),
                             ),
                           ),
-                          IconButton(
-                            icon: Icon(Icons.add),
+                          SizedBox(width: 8),
+                          ElevatedButton(
+                            child: Text('Add Tag'),
                             onPressed: _addTag,
                           ),
                         ],
@@ -266,6 +308,9 @@ class _BookConfigScreenState extends State<BookConfigScreen> {
                         child: ElevatedButton(
                           child: Text(widget.bookId == null ? 'Create Book' : 'Update Book'),
                           onPressed: _submitForm,
+                          style: ElevatedButton.styleFrom(
+                            padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                          ),
                         ),
                       ),
                     ],

@@ -275,138 +275,164 @@ class _BookWritingScreenState extends State<BookWritingScreen> with WidgetsBindi
     return Scaffold(
       appBar: AppBar(
         title: Text(_isLoading ? 'Loading...' : 'Writing: $_bookTitle'),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.save),
-            onPressed: _isSaving ? null : _saveChapter,
-          ),
-          IconButton(
-            icon: Icon(_isPublished ? Icons.public_off : Icons.public),
-            onPressed: _togglePublishStatus,
-          ),
-          IconButton(
-            icon: Icon(Icons.settings),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => AISettingsScreen(),
-                ),
-              );
-            },
-          ),
-          IconButton(
-            icon: Icon(Icons.bar_chart),
-            onPressed: _isSaving ? null : () {
-              _saveChapter();
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => BookStatisticsScreen(bookId: widget.bookId),
-                ),
-              );
-            },
-          ),
-          IconButton(
-            icon: Icon(Icons.book),
-            onPressed: _isSaving ? null : () {
-              _saveChapter();
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => BookReaderScreen(bookId: widget.bookId),
-                ),
-              );
-            },
-          ),
-        ],
+        actions: _buildAppBarActions(),
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
-          : Row(
-              children: [
-                Expanded(
-                  flex: 3,
-                  child: Column(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: _contentController,
-                          maxLines: null,
-                          expands: true,
-                          decoration: InputDecoration(
-                            hintText: 'Start writing your chapter here...',
-                            border: OutlineInputBorder(),
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            IconButton(
-                              icon: Icon(Icons.arrow_back),
-                              onPressed: _currentChapter > 1 ? () => _navigateChapter(-1) : null,
-                            ),
-                            Text('Chapter $_currentChapter'),
-                            IconButton(
-                              icon: Icon(Icons.arrow_forward),
-                              onPressed: () => _navigateChapter(1),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(width: 1, color: Colors.grey),
-                Expanded(
-                  flex: 1,
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      children: [
-                        Text('AI Assistant', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                        SizedBox(height: 8),
-                        TextField(
-                          controller: _promptController,
-                          decoration: InputDecoration(
-                            hintText: 'Enter your prompt here...',
-                            border: OutlineInputBorder(),
-                          ),
-                        ),
-                        SizedBox(height: 8),
-                        ElevatedButton(
-                          onPressed: _isAILoading ? null : _getAIAssistance,
-                          child: _isAILoading
-                              ? CircularProgressIndicator()
-                              : Text('Get AI Assistance'),
-                        ),
-                        SizedBox(height: 16),
-                        Expanded(
-                          child: Container(
-                            decoration: BoxDecoration(
-                              border: Border.all(color: Colors.grey),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            padding: EdgeInsets.all(8),
-                            child: SingleChildScrollView(
-                              child: Text(_aiGeneratedContent),
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: 8),
-                        ElevatedButton(
-                          onPressed: _aiGeneratedContent.isNotEmpty ? _insertAIContent : null,
-                          child: Text('Insert AI Content'),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+          : _buildBodyContent(),
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.save),
+        onPressed: _isSaving ? null : _saveChapter,
+      ),
+    );
+  }
+
+  List<Widget> _buildAppBarActions() {
+    return [
+      IconButton(
+        icon: Icon(_isPublished ? Icons.public_off : Icons.public),
+        onPressed: _togglePublishStatus,
+      ),
+      IconButton(
+        icon: Icon(Icons.settings),
+        onPressed: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => AISettingsScreen()),
+        ),
+      ),
+      IconButton(
+        icon: Icon(Icons.bar_chart),
+        onPressed: _isSaving ? null : () {
+          _saveChapter();
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => BookStatisticsScreen(bookId: widget.bookId),
             ),
+          );
+        },
+      ),
+      IconButton(
+        icon: Icon(Icons.book),
+        onPressed: _isSaving ? null : () {
+          _saveChapter();
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => BookReaderScreen(bookId: widget.bookId),
+            ),
+          );
+        },
+      ),
+    ];
+  }
+
+  Widget _buildBodyContent() {
+    return Row(
+      children: [
+        Expanded(
+          flex: 3,
+          child: _buildWritingArea(),
+        ),
+        VerticalDivider(width: 1, thickness: 1),
+        Expanded(
+          flex: MediaQuery.of(context).size.width > 1200 ? 1 : 2,
+          child: _buildAIAssistantArea(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildWritingArea() {
+    return Column(
+      children: [
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: TextField(
+              controller: _contentController,
+              maxLines: null,
+              expands: true,
+              decoration: InputDecoration(
+                hintText: 'Start writing your chapter here...',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ),
+        ),
+        _buildChapterNavigation(),
+      ],
+    );
+  }
+
+  Widget _buildChapterNavigation() {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          IconButton(
+            icon: Icon(Icons.arrow_back),
+            onPressed: _currentChapter > 1 ? () => _navigateChapter(-1) : null,
+          ),
+          Text('Chapter $_currentChapter of $_totalChapters', 
+               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          IconButton(
+            icon: Icon(Icons.arrow_forward),
+            onPressed: () => _navigateChapter(1),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAIAssistantArea() {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        children: [
+          Text('AI Assistant', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          SizedBox(height: 16),
+          TextField(
+            controller: _promptController,
+            decoration: InputDecoration(
+              hintText: 'Enter your prompt here...',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: _isAILoading ? null : _getAIAssistance,
+            child: _isAILoading
+                ? CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Colors.white))
+                : Text('Get AI Assistance'),
+            style: ElevatedButton.styleFrom(
+              padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+            ),
+          ),
+          SizedBox(height: 16),
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              padding: EdgeInsets.all(8),
+              child: SingleChildScrollView(
+                child: Text(_aiGeneratedContent),
+              ),
+            ),
+          ),
+          SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: _aiGeneratedContent.isNotEmpty ? _insertAIContent : null,
+            child: Text('Insert AI Content'),
+            style: ElevatedButton.styleFrom(
+              padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

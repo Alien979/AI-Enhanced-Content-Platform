@@ -32,6 +32,7 @@ class _BookLibraryScreenState extends State<BookLibraryScreen> {
   }
 
   void _loadBooks() async {
+    if (!mounted) return;
     setState(() => _isLoading = true);
     try {
       String? userId = _auth.currentUser?.uid;
@@ -42,26 +43,28 @@ class _BookLibraryScreenState extends State<BookLibraryScreen> {
             .orderBy('lastModified', descending: true)
             .get();
 
-        setState(() {
-          _allBooks = booksSnapshot.docs;
-          _filteredBooks = _allBooks;
-          _genres = ['All', ..._extractGenres(_allBooks)];
-          _tags = ['All', ..._extractTags(_allBooks)];
-          _isLoading = false;
-        });
+        if (mounted) {
+          setState(() {
+            _allBooks = booksSnapshot.docs;
+            _filteredBooks = _allBooks;
+            _genres = ['All', ..._extractGenres(_allBooks)];
+            _tags = ['All', ..._extractTags(_allBooks)];
+            _isLoading = false;
+          });
+        }
       } else {
-        setState(() => _isLoading = false);
+        if (mounted) setState(() => _isLoading = false);
       }
     } catch (e) {
       print('Error loading books: $e');
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   List<String> _extractGenres(List<DocumentSnapshot> books) {
     Set<String> genres = {};
     for (var book in books) {
-      String genre = (book.data() as Map<String, dynamic>)['genre'] ?? 'Unknown';
+      String genre = (book.data() as Map<String, dynamic>?)?['genre'] ?? 'Unknown';
       genres.add(genre);
     }
     return genres.toList()..sort();
@@ -70,7 +73,7 @@ class _BookLibraryScreenState extends State<BookLibraryScreen> {
   List<String> _extractTags(List<DocumentSnapshot> books) {
     Set<String> tags = {};
     for (var book in books) {
-      List<String> bookTags = List<String>.from((book.data() as Map<String, dynamic>)['tags'] ?? []);
+      List<String> bookTags = List<String>.from((book.data() as Map<String, dynamic>?)?['tags'] ?? []);
       tags.addAll(bookTags);
     }
     return tags.toList()..sort();
@@ -79,10 +82,12 @@ class _BookLibraryScreenState extends State<BookLibraryScreen> {
   void _filterBooks() {
     setState(() {
       _filteredBooks = _allBooks.where((book) {
-        Map<String, dynamic> data = book.data() as Map<String, dynamic>;
-        bool matchesSearch = data['title'].toLowerCase().contains(_searchQuery.toLowerCase());
+        Map<String, dynamic>? data = book.data() as Map<String, dynamic>?;
+        if (data == null) return false;
+        bool matchesSearch = data['title']?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false;
         bool matchesGenre = _selectedGenre == 'All' || data['genre'] == _selectedGenre;
-        bool matchesTag = _selectedTag == 'All' || (data['tags'] as List<dynamic>).contains(_selectedTag);
+        bool matchesTag = _selectedTag == 'All' || 
+                          ((data['tags'] as List<dynamic>?)?.contains(_selectedTag) ?? false);
         return matchesSearch && matchesGenre && matchesTag;
       }).toList();
     });
@@ -168,10 +173,12 @@ class _BookLibraryScreenState extends State<BookLibraryScreen> {
                             );
                           }).toList(),
                           onChanged: (String? newValue) {
-                            setState(() {
-                              _selectedGenre = newValue!;
-                              _filterBooks();
-                            });
+                            if (newValue != null) {
+                              setState(() {
+                                _selectedGenre = newValue;
+                                _filterBooks();
+                              });
+                            }
                           },
                         ),
                       ),
@@ -190,10 +197,12 @@ class _BookLibraryScreenState extends State<BookLibraryScreen> {
                             );
                           }).toList(),
                           onChanged: (String? newValue) {
-                            setState(() {
-                              _selectedTag = newValue!;
-                              _filterBooks();
-                            });
+                            if (newValue != null) {
+                              setState(() {
+                                _selectedTag = newValue;
+                                _filterBooks();
+                              });
+                            }
                           },
                         ),
                       ),
@@ -206,7 +215,8 @@ class _BookLibraryScreenState extends State<BookLibraryScreen> {
                       : ListView.builder(
                           itemCount: _filteredBooks.length,
                           itemBuilder: (context, index) {
-                            var book = _filteredBooks[index].data() as Map<String, dynamic>;
+                            var book = _filteredBooks[index].data() as Map<String, dynamic>?;
+                            if (book == null) return SizedBox.shrink();
                             return Card(
                               elevation: 4,
                               margin: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -231,7 +241,7 @@ class _BookLibraryScreenState extends State<BookLibraryScreen> {
                                     Wrap(
                                       spacing: 4,
                                       children: (book['tags'] as List<dynamic>? ?? []).map((tag) => Chip(
-                                        label: Text(tag, style: TextStyle(fontSize: 10)),
+                                        label: Text(tag.toString(), style: TextStyle(fontSize: 10)),
                                         padding: EdgeInsets.all(2),
                                       )).toList(),
                                     ),

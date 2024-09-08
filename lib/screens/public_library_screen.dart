@@ -1,80 +1,142 @@
-// lib/screens/public_library_screen.dart
+// lib/screens/book_library_screen.dart
 
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'book_writing_screen.dart';
 import 'book_reader_screen.dart';
-import 'review_screen.dart';
+import 'book_config_screen.dart';
+import '../widgets/side_drawer.dart';
 
-class PublicLibraryScreen extends StatefulWidget {
+class BookLibraryScreen extends StatefulWidget {
   @override
-  _PublicLibraryScreenState createState() => _PublicLibraryScreenState();
+  _BookLibraryScreenState createState() => _BookLibraryScreenState();
 }
 
-class _PublicLibraryScreenState extends State<PublicLibraryScreen> {
+class _BookLibraryScreenState extends State<BookLibraryScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  bool _isLoading = true;
+  List<DocumentSnapshot> _allBooks = [];
+  List<DocumentSnapshot> _filteredBooks = [];
   String _searchQuery = '';
   String _selectedGenre = 'All';
+  String _selectedTag = 'All';
   List<String> _genres = ['All'];
+  List<String> _tags = ['All'];
 
   @override
   void initState() {
     super.initState();
-    _loadGenres();
+    _loadBooks();
   }
 
-  void _loadGenres() async {
-    var genresSnapshot = await _firestore.collection('genres').get();
-    setState(() {
-      _genres = ['All', ...genresSnapshot.docs.map((doc) => doc['name'] as String)];
-    });
-  }
-
-  Future<void> _importBook(String bookId) async {
+  void _loadBooks() async {
+    setState(() => _isLoading = true);
     try {
-      DocumentSnapshot bookDoc = await _firestore.collection('books').doc(bookId).get();
-      Map<String, dynamic> bookData = bookDoc.data() as Map<String, dynamic>;
-      
-      await _firestore.collection('books').add({
-        ...bookData,
-        'authorId': _auth.currentUser!.uid,
-        'originalAuthorId': bookData['authorId'],
-        'isPublished': false,
-        'importedFrom': bookId,
-        'importedAt': FieldValue.serverTimestamp(),
-      });
+      String? userId = _auth.currentUser?.uid;
+      if (userId != null) {
+        QuerySnapshot booksSnapshot = await _firestore
+            .collection('books')
+            .where('authorId', isEqualTo: userId)
+            .orderBy('lastModified', descending: true)
+            .get();
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Book imported successfully')),
-      );
+        setState(() {
+          _allBooks = booksSnapshot.docs;
+          _filteredBooks = _allBooks;
+          _genres = ['All', ..._extractGenres(_allBooks)];
+          _tags = ['All', ..._extractTags(_allBooks)];
+          _isLoading = false;
+        });
+      } else {
+        setState(() => _isLoading = false);
+      }
     } catch (e) {
-      print('Error importing book: $e');
+      print('Error loading books: $e');
+      setState(() => _isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error importing book')),
+        SnackBar(content: Text('Error loading books. Please try again.')),
       );
     }
   }
 
-  void _showReviewDialog(String bookId, String bookTitle) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ReviewScreen(bookId: bookId, bookTitle: bookTitle),
-      ),
-    );
+  List<String> _extractGenres(List<DocumentSnapshot> books) {
+    Set<String> genres = {};
+    for (var book in books) {
+      String genre = (book.data() as Map<String, dynamic>)['genre'] ?? 'Unknown';
+      genres.add(genre);
+    }
+    return genres.toList()..sort();
   }
 
-  Widget _buildRatingStars(double rating) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: List.generate(5, (index) {
-        return Icon(
-          index < rating ? Icons.star : Icons.star_border,
-          color: Colors.amber,
-          size: 16,
+  List<String> _extractTags(List<DocumentSnapshot> books) {
+    Set<String> tags = {};
+    for (var book in books) {
+      List<String> bookTags = List<String>.from((book.data() as Map<String, dynamic>)['tags'] ?? []);
+      tags.addAll(bookTags);
+    }
+    return tags.toList()..sort();
+  }
+
+  void _filterBooks() {
+    setState(() {
+      _filteredBooks = _allBooks.where((book) {
+        Map<String, dynamic> data = book.data() as Map<String, dynamic>;
+        bool matchesSearch = data['title'].toString().toLowerCase().contains(_searchQuery.toLowerCase());
+        bool matchesGenre = _selectedGenre == 'All' || data['genre'] == _selectedGenre;
+        bool matchesTag = _selectedTag == 'All' || (data['tags'] as List<dynamic>?)?.contains(_selectedTag) == true;
+        return matchesSearch && matchesGenre && matchesTag;
+      }).toList();
+    });
+  }
+
+  void _deleteBook(String bookId) async {
+    bool confirmDelete = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Confirm Delete"),
+          content: Text("Are you sure you want to delete this book?"),
+          actions: <Widget>[
+            TextButton(
+              child: Text("Cancel"),
+              onPressed: () => Navigator.of(context).pop(false),
+            ),
+            TextButton(
+              child: Text("Delete"),
+              onPressed: () => Navigator.of(context).pop(true),
+            ),
+          ],
         );
-      }),
+      },
+    );
+
+    if (confirmDelete == true) {
+      try {
+        await _firestore.collection('books').doc(bookId).delete();
+        _loadBooks();  // Reload the book list
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Book deleted successfully')),
+        );
+      } catch (e) {
+        print('Error deleting book: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error deleting book. Please try again.')),
+        );
+      }
+    }
+  }
+
+  Widget _buildBookCover(String? imageUrl) {
+    return CachedNetworkImage(
+      imageUrl: imageUrl ?? '',
+      width: 50,
+      height: 70,
+      fit: BoxFit.cover,
+      placeholder: (context, url) => CircularProgressIndicator(),
+      errorWidget: (context, url, error) => Icon(Icons.book, size: 50),
     );
   }
 
@@ -82,132 +144,152 @@ class _PublicLibraryScreenState extends State<PublicLibraryScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Public Library'),
+        title: Text('My Library'),
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: 'Search books...',
-                prefixIcon: Icon(Icons.search),
-              ),
-              onChanged: (value) {
-                setState(() {
-                  _searchQuery = value;
-                });
-              },
-            ),
-          ),
-          DropdownButton<String>(
-            value: _selectedGenre,
-            items: _genres.map((String genre) {
-              return DropdownMenuItem<String>(
-                value: genre,
-                child: Text(genre),
-              );
-            }).toList(),
-            onChanged: (String? newValue) {
-              setState(() {
-                _selectedGenre = newValue!;
-              });
-            },
-          ),
-          Expanded(
-            child: StreamBuilder<QuerySnapshot>(
-              stream: _firestore.collection('books')
-                  .where('isPublished', isEqualTo: true)
-                  .snapshots(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
-                }
-
-                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return Center(child: Text('No published books available.'));
-                }
-
-                var books = snapshot.data!.docs;
-                books = books.where((book) {
-                  var data = book.data() as Map<String, dynamic>;
-                  bool matchesSearch = data['title'].toString().toLowerCase().contains(_searchQuery.toLowerCase());
-                  bool matchesGenre = _selectedGenre == 'All' || data['genre'] == _selectedGenre;
-                  return matchesSearch && matchesGenre;
-                }).toList();
-
-                return ListView.builder(
-                  itemCount: books.length,
-                  itemBuilder: (context, index) {
-                    var book = books[index].data() as Map<String, dynamic>;
-                    return ListTile(
-                      title: Text(book['title']),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Author: ${book['authorName']} | Genre: ${book['genre']}'),
-                          _buildRatingStars(book['averageRating'] ?? 0.0),
-                        ],
+      drawer: SideDrawer(),
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: TextField(
+                    decoration: InputDecoration(
+                      labelText: 'Search books',
+                      prefixIcon: Icon(Icons.search),
+                      border: OutlineInputBorder(),
+                    ),
+                    onChanged: (value) {
+                      setState(() {
+                        _searchQuery = value;
+                        _filterBooks();
+                      });
+                    },
+                  ),
+                ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: DropdownButton<String>(
+                          isExpanded: true,
+                          value: _selectedGenre,
+                          hint: Text('Select Genre'),
+                          items: _genres.map((String genre) {
+                            return DropdownMenuItem<String>(
+                              value: genre,
+                              child: Text(genre),
+                            );
+                          }).toList(),
+                          onChanged: (String? newValue) {
+                            setState(() {
+                              _selectedGenre = newValue!;
+                              _filterBooks();
+                            });
+                          },
+                        ),
                       ),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: Icon(Icons.book),
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => BookReaderScreen(bookId: books[index].id),
+                    ),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: DropdownButton<String>(
+                          isExpanded: true,
+                          value: _selectedTag,
+                          hint: Text('Select Tag'),
+                          items: _tags.map((String tag) {
+                            return DropdownMenuItem<String>(
+                              value: tag,
+                              child: Text(tag),
+                            );
+                          }).toList(),
+                          onChanged: (String? newValue) {
+                            setState(() {
+                              _selectedTag = newValue!;
+                              _filterBooks();
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                Expanded(
+                  child: _filteredBooks.isEmpty
+                      ? Center(child: Text('No books found.'))
+                      : ListView.builder(
+                          itemCount: _filteredBooks.length,
+                          itemBuilder: (context, index) {
+                            var book = _filteredBooks[index].data() as Map<String, dynamic>;
+                            return Card(
+                              elevation: 4,
+                              margin: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                              child: ListTile(
+                                contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                                leading: _buildBookCover(book['coverImage']),
+                                title: Text(book['title'] ?? 'Untitled', style: TextStyle(fontWeight: FontWeight.bold)),
+                                subtitle: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('Genre: ${book['genre'] ?? 'Not specified'}'),
+                                    Text('Chapters: ${book['chapterCount'] ?? 0}'),
+                                    Text('Status: ${book['isPublished'] == true ? 'Published' : 'Draft'}'),
+                                    Wrap(
+                                      spacing: 4,
+                                      children: (book['tags'] as List<dynamic>? ?? []).map((tag) => Chip(
+                                        label: Text(tag, style: TextStyle(fontSize: 10)),
+                                        padding: EdgeInsets.all(2),
+                                      )).toList(),
+                                    ),
+                                  ],
                                 ),
-                              );
-                            },
-                          ),
-                          IconButton(
-                            icon: Icon(Icons.file_copy),
-                            onPressed: () => _importBook(books[index].id),
-                          ),
-                          IconButton(
-                            icon: Icon(Icons.rate_review),
-                            onPressed: () => _showReviewDialog(books[index].id, book['title']),
-                          ),
-                        ],
-                      ),
-                      onTap: () {
-                        showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return AlertDialog(
-                              title: Text(book['title']),
-                              content: SingleChildScrollView(
-                                child: ListBody(
-                                  children: <Widget>[
-                                    Text('Author: ${book['authorName']}'),
-                                    Text('Genre: ${book['genre']}'),
-                                    Text('Summary: ${book['summary']}'),
-                                    Text('Rating: ${book['averageRating']?.toStringAsFixed(1) ?? 'Not rated'}'),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: Icon(Icons.edit),
+                                      onPressed: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => BookConfigScreen(bookId: _filteredBooks[index].id),
+                                          ),
+                                        ).then((_) => _loadBooks());
+                                      },
+                                    ),
+                                    IconButton(
+                                      icon: Icon(Icons.book),
+                                      onPressed: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => BookWritingScreen(bookId: _filteredBooks[index].id),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                    IconButton(
+                                      icon: Icon(Icons.delete),
+                                      onPressed: () => _deleteBook(_filteredBooks[index].id),
+                                    ),
                                   ],
                                 ),
                               ),
-                              actions: <Widget>[
-                                TextButton(
-                                  child: Text('Close'),
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                ),
-                              ],
                             );
                           },
-                        );
-                      },
-                    );
-                  },
-                );
-              },
+                        ),
+                ),
+              ],
             ),
-          ),
-        ],
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.add),
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => BookConfigScreen()),
+          ).then((_) => _loadBooks());
+        },
       ),
     );
   }
