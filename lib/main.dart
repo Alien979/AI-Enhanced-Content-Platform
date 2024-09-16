@@ -1,8 +1,8 @@
-// lib/main.dart
-
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
 import 'screens/dashboard_screen.dart';
@@ -16,12 +16,15 @@ import 'screens/book_statistics_screen.dart';
 import 'screens/book_reader_screen.dart';
 import 'screens/publish_book_screen.dart';
 import 'screens/main_screen.dart';
+import 'screens/onboarding_screen.dart';
+import 'screens/book_writing_guide_screen.dart';
+import 'providers/writing_mode_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: const FirebaseOptions(
-      apiKey: "Firebase api",
+      apiKey: "AIzaSyACSYlGC95BHsPkmEPontpj3xlAkMpNenA",
       authDomain: "monday-d7ae4.firebaseapp.com",
       projectId: "monday-d7ae4",
       storageBucket: "monday-d7ae4.appspot.com",
@@ -30,10 +33,17 @@ void main() async {
       measurementId: "G-1T94EZ9GMY",
     ),
   );
-  runApp(MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => WritingModeProvider(),
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -42,23 +52,6 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.blue).copyWith(secondary: Colors.blueAccent),
         visualDensity: VisualDensity.adaptivePlatformDensity,
-        textTheme: TextTheme(
-          displayLarge: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold, color: Colors.black87),
-          displayMedium: TextStyle(fontSize: 22.0, fontWeight: FontWeight.bold, color: Colors.black87),
-          displaySmall: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold, color: Colors.black87),
-          headlineMedium: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold, color: Colors.black87),
-          headlineSmall: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold, color: Colors.black87),
-          titleLarge: TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold, color: Colors.black87),
-          bodyLarge: TextStyle(fontSize: 14.0, color: Colors.black54),
-          bodyMedium: TextStyle(fontSize: 12.0, color: Colors.black54),
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue,
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
-          ),
-        ),
       ),
       home: AuthWrapper(),
       routes: {
@@ -71,50 +64,68 @@ class MyApp extends StatelessWidget {
         '/library': (context) => LibraryScreen(),
         '/user_profile': (context) => UserProfileScreen(),
         '/ai_settings': (context) => AISettingsScreen(),
+        '/onboarding': (context) => OnboardingScreen(),
       },
       onGenerateRoute: (settings) {
-        if (settings.name == '/book_writing') {
-          final args = settings.arguments as Map<String, dynamic>;
-          return MaterialPageRoute(
-            builder: (context) => BookWritingScreen(bookId: args['bookId']),
-          );
+        final args = settings.arguments as Map<String, dynamic>?;
+        switch (settings.name) {
+          case '/book_writing':
+            return MaterialPageRoute(
+              builder: (context) => BookWritingScreen(bookId: args?['bookId']),
+            );
+          case '/book_statistics':
+            return MaterialPageRoute(
+              builder: (context) => BookStatisticsScreen(bookId: args?['bookId']),
+            );
+          case '/book_reader':
+            return MaterialPageRoute(
+              builder: (context) => BookReaderScreen(bookId: args?['bookId']),
+            );
+          case '/publish_book':
+            return MaterialPageRoute(
+              builder: (context) => PublishBookScreen(bookId: args?['bookId']),
+            );
+          case '/book_writing_guide':
+            return MaterialPageRoute(
+              builder: (context) => BookWritingGuideScreen(bookId: args?['bookId']),
+            );
+          default:
+            return null;
         }
-        if (settings.name == '/book_statistics') {
-          final args = settings.arguments as Map<String, dynamic>;
-          return MaterialPageRoute(
-            builder: (context) => BookStatisticsScreen(bookId: args['bookId']),
-          );
-        }
-        if (settings.name == '/book_reader') {
-          final args = settings.arguments as Map<String, dynamic>;
-          return MaterialPageRoute(
-            builder: (context) => BookReaderScreen(bookId: args['bookId']),
-          );
-        }
-        if (settings.name == '/publish_book') {
-          final args = settings.arguments as Map<String, dynamic>;
-          return MaterialPageRoute(
-            builder: (context) => PublishBookScreen(bookId: args['bookId']),
-          );
-        }
-        return null;
       },
     );
   }
 }
 
 class AuthWrapper extends StatelessWidget {
+  const AuthWrapper({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<User?>(
-      stream: FirebaseAuth.instance.authStateChanges(),
+    return FutureBuilder<SharedPreferences>(
+      future: SharedPreferences.getInstance(),
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.active) {
-          User? user = snapshot.data;
-          if (user == null) {
-            return LoginScreen();
+        if (snapshot.connectionState == ConnectionState.done) {
+          final prefs = snapshot.data;
+          final onboardingComplete = prefs?.getBool('onboarding_complete') ?? false;
+
+          if (!onboardingComplete) {
+            return OnboardingScreen();
           }
-          return MainScreen();
+
+          return StreamBuilder<User?>(
+            stream: FirebaseAuth.instance.authStateChanges(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.active) {
+                User? user = snapshot.data;
+                if (user == null) {
+                  return LoginScreen();
+                }
+                return MainScreen();
+              }
+              return SplashScreen();
+            },
+          );
         }
         return SplashScreen();
       },
@@ -123,6 +134,8 @@ class AuthWrapper extends StatelessWidget {
 }
 
 class SplashScreen extends StatelessWidget {
+  const SplashScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -130,28 +143,10 @@ class SplashScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 20),
+            const CircularProgressIndicator(),
+            const SizedBox(height: 20),
             Text('Loading...', style: Theme.of(context).textTheme.titleLarge),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class ErrorScreen extends StatelessWidget {
-  final String message;
-
-  ErrorScreen({required this.message});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Text(
-          message,
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.red),
         ),
       ),
     );

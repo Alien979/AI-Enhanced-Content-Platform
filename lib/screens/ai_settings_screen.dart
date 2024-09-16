@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AISettingsScreen extends StatefulWidget {
+  const AISettingsScreen({super.key});
+
   @override
   _AISettingsScreenState createState() => _AISettingsScreenState();
 }
@@ -34,7 +36,7 @@ class _AISettingsScreenState extends State<AISettingsScreen> {
     await prefs.setInt('ai_max_tokens', _maxTokens);
     await prefs.setString('ai_writing_style', _writingStyle);
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Settings saved successfully')),
+      const SnackBar(content: Text('Settings saved successfully')),
     );
   }
 
@@ -42,14 +44,14 @@ class _AISettingsScreenState extends State<AISettingsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('AI Assistant Settings'),
+        title: const Text('AI Assistant Settings'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Creativity (Temperature)', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const Text('Creativity (Temperature)', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             Slider(
               value: _temperature,
               min: 0.0,
@@ -62,8 +64,8 @@ class _AISettingsScreenState extends State<AISettingsScreen> {
                 });
               },
             ),
-            SizedBox(height: 20),
-            Text('Max Tokens', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 20),
+            const Text('Max Tokens', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             Slider(
               value: _maxTokens.toDouble(),
               min: 50,
@@ -76,8 +78,8 @@ class _AISettingsScreenState extends State<AISettingsScreen> {
                 });
               },
             ),
-            SizedBox(height: 20),
-            Text('Writing Style', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 20),
+            const Text('Writing Style', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             DropdownButton<String>(
               value: _writingStyle,
               onChanged: (String? newValue) {
@@ -95,11 +97,11 @@ class _AISettingsScreenState extends State<AISettingsScreen> {
                 );
               }).toList(),
             ),
-            SizedBox(height: 40),
+            const SizedBox(height: 40),
             Center(
               child: ElevatedButton(
                 onPressed: _saveSettings,
-                child: Text('Save Settings'),
+                child: const Text('Save Settings'),
               ),
             ),
           ],

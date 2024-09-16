@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 
 class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({super.key});
+
   @override
   _RegisterScreenState createState() => _RegisterScreenState();
 }
@@ -20,15 +22,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Register'),
+        title: const Text('Register'),
       ),
       body: Container(
-        padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 50.0),
+        padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 50.0),
         child: Form(
           key: _formKey,
           child: Column(
             children: <Widget>[
-              SizedBox(height: 20.0),
+              const SizedBox(height: 20.0),
               TextFormField(
                 decoration: InputDecoration(
                   hintText: 'Email',
@@ -43,7 +45,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   setState(() => email = val);
                 },
               ),
-              SizedBox(height: 20.0),
+              const SizedBox(height: 20.0),
               TextFormField(
                 decoration: InputDecoration(
                   hintText: 'Password',
@@ -59,12 +61,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   setState(() => password = val);
                 },
               ),
-              SizedBox(height: 20.0),
+              const SizedBox(height: 20.0),
               ElevatedButton(
-                child: Text('Register'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
-                  padding: EdgeInsets.symmetric(horizontal: 50, vertical: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 10),
                 ),
                 onPressed: () async {
                   if (_formKey.currentState!.validate()) {
@@ -76,15 +77,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     }
                   }
                 },
+                child: Text('Register'),
               ),
-              SizedBox(height: 12.0),
+              const SizedBox(height: 12.0),
               Text(
                 error,
-                style: TextStyle(color: Colors.red, fontSize: 14.0),
+                style: const TextStyle(color: Colors.red, fontSize: 14.0),
               ),
-              SizedBox(height: 20.0),
+              const SizedBox(height: 20.0),
               TextButton(
-                child: Text('Already have an account? Sign In'),
+                child: const Text('Already have an account? Sign In'),
                 onPressed: () {
                   Navigator.pop(context);
                 },

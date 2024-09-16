@@ -19,7 +19,7 @@ dependencies:
   firebase_auth_web: ^5.12.6
   cloud_firestore_web: ^4.1.2
   http: ^0.13.3
-  flutter_quill: ^7.3.2
+ # flutter_quill: ^7.3.2
   shared_preferences: ^2.0.8
   intl: ^0.17.0
   firebase_storage: ^12.2.0
@@ -27,6 +27,8 @@ dependencies:
   fl_chart: ^0.63.0 
   cached_network_image: ^3.2.0
   carousel_slider: ^4.2.1
+  url_launcher: ^6.0.12
+  provider: ^6.0.5
   
  
   
@@ -39,4 +41,9 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
+ 
     - assets/images/placeholder.png
+    - assets/images/
+    - assets/images/onboarding1.png
+    - assets/images/onboarding2.png
+    - assets/images/onboarding3.png

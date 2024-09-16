@@ -6,7 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class BookPreviewScreen extends StatefulWidget {
   final String bookId;
 
-  BookPreviewScreen({required this.bookId});
+  const BookPreviewScreen({super.key, required this.bookId});
 
   @override
   _BookPreviewScreenState createState() => _BookPreviewScreenState();
@@ -16,7 +16,7 @@ class _BookPreviewScreenState extends State<BookPreviewScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   bool _isLoading = true;
   String _bookTitle = '';
-  List<String> _chapters = [];
+  final List<String> _chapters = [];
 
   @override
   void initState() {
@@ -67,7 +67,7 @@ class _BookPreviewScreenState extends State<BookPreviewScreen> {
         title: Text(_isLoading ? 'Loading...' : 'Preview: $_bookTitle'),
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : ListView.builder(
               itemCount: _chapters.length,
               itemBuilder: (context, index) {
@@ -78,14 +78,14 @@ class _BookPreviewScreenState extends State<BookPreviewScreen> {
                       padding: const EdgeInsets.all(8.0),
                       child: Text(
                         'Chapter ${index + 1}',
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                       ),
                     ),
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Text(_chapters[index]),
                     ),
-                    Divider(),
+                    const Divider(),
                   ],
                 );
               },

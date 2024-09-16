@@ -4,13 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class SideDrawer extends StatelessWidget {
+  const SideDrawer({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
         children: <Widget>[
-          DrawerHeader(
+          const DrawerHeader(
             decoration: BoxDecoration(
               color: Colors.blue,
             ),
@@ -23,30 +25,30 @@ class SideDrawer extends StatelessWidget {
             ),
           ),
           ListTile(
-            leading: Icon(Icons.dashboard),
-            title: Text('Dashboard'),
+            leading: const Icon(Icons.dashboard),
+            title: const Text('Dashboard'),
             onTap: () {
               Navigator.pushReplacementNamed(context, '/');
             },
           ),
           ListTile(
-            leading: Icon(Icons.library_books),
-            title: Text('My Books'),
+            leading: const Icon(Icons.library_books),
+            title: const Text('My Books'),
             onTap: () {
               Navigator.pushReplacementNamed(context, '/books');
             },
           ),
           ListTile(
-            leading: Icon(Icons.add),
-            title: Text('Create New Book'),
+            leading: const Icon(Icons.add),
+            title: const Text('Create New Book'),
             onTap: () {
               Navigator.pushNamed(context, '/book_config');
             },
           ),
-          Divider(),
+          const Divider(),
           ListTile(
-            leading: Icon(Icons.exit_to_app),
-            title: Text('Logout'),
+            leading: const Icon(Icons.exit_to_app),
+            title: const Text('Logout'),
             onTap: () async {
               await FirebaseAuth.instance.signOut();
               Navigator.pushReplacementNamed(context, '/login');

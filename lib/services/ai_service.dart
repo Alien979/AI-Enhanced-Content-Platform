@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class AIService {
-  static const String _apiKey = 'API KEY';
+  static const String _apiKey = 'AIzaSyDKxYk8uoSqRCv-_qQPL9xhfwOV3pC39_0';
   static const String _apiUrl =
       'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
 
@@ -16,7 +16,7 @@ class AIService {
   }) async {
     try {
       // Limit the context to avoid exceeding token limits
-      final int maxContextLength =
+      const int maxContextLength =
           2000; // Adjust this value based on your needs
       String fullContext = '';
 
@@ -106,6 +106,6 @@ Do not repeat information already provided. Focus on moving the story forward or
 
   static String _summarizeText(String text, {int maxLength = 200}) {
     if (text.length <= maxLength) return text;
-    return text.substring(0, maxLength) + '...';
+    return '${text.substring(0, maxLength)}...';
   }
 }

@@ -7,7 +7,7 @@ import 'package:intl/intl.dart';
 class BookStatisticsScreen extends StatefulWidget {
   final String bookId;
 
-  BookStatisticsScreen({required this.bookId});
+  const BookStatisticsScreen({super.key, required this.bookId});
 
   @override
   _BookStatisticsScreenState createState() => _BookStatisticsScreenState();
@@ -66,17 +66,17 @@ class _BookStatisticsScreenState extends State<BookStatisticsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Book Statistics'),
+        title: const Text('Book Statistics'),
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(_bookStats['title'], style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-                  SizedBox(height: 20),
+                  Text(_bookStats['title'], style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 20),
                   _buildStatItem('Total Chapters', _bookStats['chapterCount'].toString()),
                   _buildStatItem('Total Words', _bookStats['totalWords'].toString()),
                   _buildStatItem('Total Characters', _bookStats['totalCharacters'].toString()),
@@ -95,8 +95,8 @@ class _BookStatisticsScreenState extends State<BookStatisticsScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-          Text(value, style: TextStyle(fontSize: 16)),
+          Text(label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          Text(value, style: const TextStyle(fontSize: 16)),
         ],
       ),
     );

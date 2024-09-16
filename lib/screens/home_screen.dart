@@ -1,5 +1,3 @@
-// lib/screens/home_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -12,20 +10,22 @@ class HomeScreen extends StatelessWidget {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  const HomeScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('AI Book Writing Platform'),
+        title: const Text('AI Book Writing Platform'),
         actions: [
           IconButton(
-            icon: Icon(Icons.search),
+            icon: const Icon(Icons.search),
             onPressed: () {
               // TODO: Implement search functionality
             },
           ),
           IconButton(
-            icon: Icon(Icons.person),
+            icon: const Icon(Icons.person),
             onPressed: () {
               Navigator.push(
                 context,
@@ -46,24 +46,31 @@ class HomeScreen extends StatelessWidget {
                 'Currently Reading',
                 style: Theme.of(context).textTheme.titleLarge,
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               _buildCurrentlyReadingSection(context),
-              SizedBox(height: 24),
+              const SizedBox(height: 24),
               Text(
                 'Your Books',
                 style: Theme.of(context).textTheme.titleLarge,
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               _buildYourBooksSection(context),
-              SizedBox(height: 24),
+              const SizedBox(height: 24),
+              Text(
+                'Public Library',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 16),
+              _buildPublicLibrarySection(context),
+              const SizedBox(height: 24),
               ElevatedButton(
-                child: Text('Create New Book'),
                 onPressed: () {
                   Navigator.pushNamed(context, '/book_config');
                 },
                 style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                 ),
+                child: Text('Create New Book'),
               ),
             ],
           ),
@@ -81,7 +88,7 @@ class HomeScreen extends StatelessWidget {
             decoration: BoxDecoration(
               color: Theme.of(context).primaryColor,
             ),
-            child: Text(
+            child: const Text(
               'Menu',
               style: TextStyle(
                 color: Colors.white,
@@ -90,36 +97,36 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
           ListTile(
-            leading: Icon(Icons.library_books),
-            title: Text('Public Library'),
+            leading: const Icon(Icons.library_books),
+            title: const Text('Public Library'),
             onTap: () {
               Navigator.pushNamed(context, '/public_library');
             },
           ),
           ListTile(
-            leading: Icon(Icons.book),
-            title: Text('My Books'),
+            leading: const Icon(Icons.book),
+            title: const Text('My Books'),
             onTap: () {
               Navigator.pushNamed(context, '/books');
             },
           ),
           ListTile(
-            leading: Icon(Icons.add),
-            title: Text('Create New Book'),
+            leading: const Icon(Icons.add),
+            title: const Text('Create New Book'),
             onTap: () {
               Navigator.pushNamed(context, '/book_config');
             },
           ),
           ListTile(
-            leading: Icon(Icons.person),
-            title: Text('My Profile'),
+            leading: const Icon(Icons.person),
+            title: const Text('My Profile'),
             onTap: () {
               Navigator.pushNamed(context, '/user_profile');
             },
           ),
           ListTile(
-            leading: Icon(Icons.exit_to_app),
-            title: Text('Logout'),
+            leading: const Icon(Icons.exit_to_app),
+            title: const Text('Logout'),
             onTap: () async {
               await _auth.signOut();
               Navigator.pushReplacementNamed(context, '/login');
@@ -140,7 +147,7 @@ class HomeScreen extends StatelessWidget {
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
+          return const Center(child: CircularProgressIndicator());
         }
 
         if (snapshot.hasError) {
@@ -150,9 +157,9 @@ class HomeScreen extends StatelessWidget {
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
           return Card(
             child: ListTile(
-              title: Text('No book in progress'),
-              subtitle: Text('Start a new book to begin writing'),
-              trailing: Icon(Icons.arrow_forward_ios),
+              title: const Text('No book in progress'),
+              subtitle: const Text('Start a new book to begin writing'),
+              trailing: const Icon(Icons.arrow_forward_ios),
               onTap: () {
                 Navigator.pushNamed(context, '/book_config');
               },
@@ -162,7 +169,7 @@ class HomeScreen extends StatelessWidget {
 
         var bookData = snapshot.data!.docs.first.data() as Map<String, dynamic>?;
         if (bookData == null) {
-          return Card(
+          return const Card(
             child: ListTile(
               title: Text('Error loading book'),
               subtitle: Text('Please try again later'),
@@ -182,18 +189,17 @@ class HomeScreen extends StatelessWidget {
               height: 50,
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) {
-                print('Error loading image: $error');
                 return Container(
                   width: 50,
                   height: 50,
                   color: Colors.grey[300],
-                  child: Icon(Icons.book, size: 25),
+                  child: const Icon(Icons.book, size: 25),
                 );
               },
             ),
             title: Text(title),
             subtitle: Text('$chapterCount chapters'),
-            trailing: Icon(Icons.arrow_forward_ios),
+            trailing: const Icon(Icons.arrow_forward_ios),
             onTap: () {
               Navigator.pushNamed(
                 context,
@@ -215,7 +221,7 @@ class HomeScreen extends StatelessWidget {
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
+          return const Center(child: CircularProgressIndicator());
         }
 
         if (snapshot.hasError) {
@@ -223,7 +229,7 @@ class HomeScreen extends StatelessWidget {
         }
 
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return Center(child: Text('No books yet. Start writing!'));
+          return const Center(child: Text('No books yet. Start writing!'));
         }
 
         return SizedBox(
@@ -233,9 +239,9 @@ class HomeScreen extends StatelessWidget {
             itemCount: snapshot.data!.docs.length,
             itemBuilder: (context, index) {
               var bookData = snapshot.data!.docs[index].data() as Map<String, dynamic>?;
-              
+
               if (bookData == null) {
-                return SizedBox.shrink(); // Skip this item if data is null
+                return const SizedBox.shrink(); // Skip this item if data is null
               }
 
               String title = bookData['title'] as String? ?? 'Untitled';
@@ -251,7 +257,7 @@ class HomeScreen extends StatelessWidget {
                 },
                 child: Container(
                   width: 120,
-                  margin: EdgeInsets.only(right: 16),
+                  margin: const EdgeInsets.only(right: 16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -260,15 +266,14 @@ class HomeScreen extends StatelessWidget {
                           coverUrl,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) {
-                            print('Error loading image: $error');
                             return Container(
                               color: Colors.grey[300],
-                              child: Icon(Icons.book, size: 50),
+                              child: const Icon(Icons.book, size: 50),
                             );
                           },
                         ),
                       ),
-                      SizedBox(height: 8),
+                      const SizedBox(height: 8),
                       Text(
                         title,
                         style: Theme.of(context).textTheme.titleSmall,
@@ -286,7 +291,84 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  // This method should be used when creating a new book
+  Widget _buildPublicLibrarySection(BuildContext context) {
+    return StreamBuilder<QuerySnapshot>(
+      stream: _firestore
+          .collection('books')
+          .where('isPublished', isEqualTo: true)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        }
+
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return const Center(child: Text('No public books available.'));
+        }
+
+        return SizedBox(
+          height: 200,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: snapshot.data!.docs.length,
+            itemBuilder: (context, index) {
+              var bookData = snapshot.data!.docs[index].data() as Map<String, dynamic>?;
+
+              if (bookData == null) {
+                return const SizedBox.shrink(); // Skip this item if data is null
+              }
+
+              String title = bookData['title'] as String? ?? 'Untitled';
+              String coverUrl = bookData['coverUrl'] as String? ?? 'https://via.placeholder.com/120x160';
+
+              return GestureDetector(
+                onTap: () {
+                  Navigator.pushNamed(
+                    context,
+                    '/book_reading',
+                    arguments: {'bookId': snapshot.data!.docs[index].id},
+                  );
+                },
+                child: Container(
+                  width: 120,
+                  margin: const EdgeInsets.only(right: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Image.network(
+                          coverUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              color: Colors.grey[300],
+                              child: const Icon(Icons.book, size: 50),
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        title,
+                        style: Theme.of(context).textTheme.titleSmall,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
   Future<void> createBook(String title, String summary, String genre) async {
     try {
       await _firestore.collection('books').add({

@@ -2,20 +2,26 @@
 
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dashboard_screen.dart';
 import 'book_library_screen.dart';
 import 'library_screen.dart';
 import 'user_profile_screen.dart';
 import 'book_config_screen.dart';
+import 'book_writing_guide_screen.dart';
 
 class MainScreen extends StatefulWidget {
+  const MainScreen({super.key});
+
   @override
   _MainScreenState createState() => _MainScreenState();
 }
 
 class _MainScreenState extends State<MainScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   int _currentIndex = 0;
+
   final List<Widget> _screens = [
     DashboardScreen(),
     BookLibraryScreen(),
@@ -38,7 +44,7 @@ class _MainScreenState extends State<MainScreen> {
           });
         },
         type: BottomNavigationBarType.fixed,
-        items: [
+        items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.dashboard),
             label: 'Dashboard',
@@ -58,7 +64,7 @@ class _MainScreenState extends State<MainScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.edit),
+        child: const Icon(Icons.edit),
         onPressed: () {
           _showWritingOptions(context);
         },
@@ -76,8 +82,8 @@ class _MainScreenState extends State<MainScreen> {
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               ListTile(
-                leading: Icon(Icons.add),
-                title: Text('Start New Book'),
+                leading: const Icon(Icons.add),
+                title: const Text('Start New Book'),
                 onTap: () {
                   Navigator.pop(context);
                   Navigator.push(
@@ -87,8 +93,8 @@ class _MainScreenState extends State<MainScreen> {
                 },
               ),
               ListTile(
-                leading: Icon(Icons.edit),
-                title: Text('Continue Writing'),
+                leading: const Icon(Icons.edit),
+                title: const Text('Continue Writing'),
                 onTap: () {
                   Navigator.pop(context);
                   _navigateToLastBook(context);
@@ -101,10 +107,33 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  void _navigateToLastBook(BuildContext context) {
-    // TODO: Implement logic to get the last book the user was working on
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Navigating to last book... (To be implemented)')),
-    );
+  void _navigateToLastBook(BuildContext context) async {
+    try {
+      String userId = _auth.currentUser!.uid;
+      QuerySnapshot booksSnapshot = await _firestore
+          .collection('books')
+          .where('authorId', isEqualTo: userId)
+          .orderBy('lastModified', descending: true)
+          .limit(1)
+          .get();
+
+      if (booksSnapshot.docs.isNotEmpty) {
+        String bookId = booksSnapshot.docs.first.id;
+        Navigator.pushNamed(
+          context,
+          '/book_writing_guide',
+          arguments: {'bookId': bookId},
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No books found. Start a new book!')),
+        );
+      }
+    } catch (e) {
+      print('Error navigating to last book: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error loading last book. Please try again.')),
+      );
+    }
   }
 }

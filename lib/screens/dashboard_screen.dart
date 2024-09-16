@@ -8,22 +8,24 @@ class DashboardScreen extends StatelessWidget {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // Define a color scheme
-  final Color primaryColor = Color(0xFF6200EE);
-  final Color secondaryColor = Color(0xFF03DAC6);
-  final Color backgroundColor = Color(0xFFF5F5F5);
-  final Color textColor = Color(0xFF333333);
+  final Color primaryColor = const Color(0xFF6200EE);
+  final Color secondaryColor = const Color(0xFF03DAC6);
+  final Color backgroundColor = const Color(0xFFF5F5F5);
+  final Color textColor = const Color(0xFF333333);
+
+  DashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
-        title: Text('Dashboard', style: TextStyle(color: Colors.white)),
+        title: const Text('Dashboard', style: TextStyle(color: Colors.white)),
         backgroundColor: primaryColor,
         elevation: 0,
         actions: [
           IconButton(
-            icon: Icon(Icons.settings, color: Colors.white),
+            icon: const Icon(Icons.settings, color: Colors.white),
             onPressed: () => Navigator.pushNamed(context, '/ai_settings'),
           ),
         ],
@@ -33,7 +35,7 @@ class DashboardScreen extends StatelessWidget {
           // Implement refresh logic if needed
         },
         child: SingleChildScrollView(
-          physics: AlwaysScrollableScrollPhysics(),
+          physics: const AlwaysScrollableScrollPhysics(),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -56,32 +58,32 @@ class DashboardScreen extends StatelessWidget {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(primaryColor)));
         }
-        
+
         if (snapshot.hasError) {
           return Center(child: Text('Error: ${snapshot.error}', style: TextStyle(color: textColor)));
         }
-        
+
         if (!snapshot.hasData || !snapshot.data!.exists) {
           return Card(
             color: secondaryColor,
-            margin: EdgeInsets.all(16),
+            margin: const EdgeInsets.all(16),
             child: ListTile(
-              leading: Icon(Icons.person_add, color: Colors.white),
-              title: Text('Welcome! Please complete your profile.', style: TextStyle(color: Colors.white)),
-              trailing: Icon(Icons.arrow_forward_ios, color: Colors.white),
+              leading: const Icon(Icons.person_add, color: Colors.white),
+              title: const Text('Welcome! Please complete your profile.', style: TextStyle(color: Colors.white)),
+              trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white),
               onTap: () => Navigator.pushNamed(context, '/user_profile'),
             ),
           );
         }
-        
+
         var userData = snapshot.data!.data() as Map<String, dynamic>;
         String userName = userData['displayName'] ?? 'Writer';
 
         return Container(
-          padding: EdgeInsets.all(16),
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: primaryColor,
-            borderRadius: BorderRadius.only(
+            borderRadius: const BorderRadius.only(
               bottomLeft: Radius.circular(30),
               bottomRight: Radius.circular(30),
             ),
@@ -89,15 +91,15 @@ class DashboardScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              const Text(
                 'Welcome back,',
                 style: TextStyle(color: Colors.white, fontSize: 24),
               ),
               Text(
                 userName,
-                style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold),
+                style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold),
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               Text(
                 'Ready to write today?',
                 style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 18),
@@ -153,7 +155,7 @@ class DashboardScreen extends StatelessWidget {
           child: Column(
             children: [
               Icon(icon, size: 40, color: color),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               Text(title, style: TextStyle(fontSize: 16, color: textColor.withOpacity(0.8))),
               Text(value, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: color)),
             ],
@@ -170,7 +172,7 @@ class DashboardScreen extends StatelessWidget {
         elevation: 4,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         child: ListTile(
-          leading: Icon(Icons.local_fire_department, color: Colors.orange),
+          leading: const Icon(Icons.local_fire_department, color: Colors.orange),
           title: Text('Writing Streak', style: TextStyle(color: textColor, fontWeight: FontWeight.bold)),
           subtitle: Text('5 days in a row!', style: TextStyle(color: textColor.withOpacity(0.8))),
           trailing: Icon(Icons.chevron_right, color: primaryColor),
@@ -189,7 +191,7 @@ class DashboardScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text('Recent Books', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: textColor)),
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
           StreamBuilder<QuerySnapshot>(
             stream: _firestore
                 .collection('books')
@@ -210,7 +212,7 @@ class DashboardScreen extends StatelessWidget {
                 return Text('No books yet. Start writing!', style: TextStyle(color: textColor.withOpacity(0.8)));
               }
 
-              return Container(
+              return SizedBox(
                 height: 200,
                 child: PageView.builder(
                   itemCount: snapshot.data!.docs.length,
@@ -223,7 +225,7 @@ class DashboardScreen extends StatelessWidget {
                         elevation: 4,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                         child: Container(
-                          padding: EdgeInsets.all(16),
+                          padding: const EdgeInsets.all(16),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -231,20 +233,20 @@ class DashboardScreen extends StatelessWidget {
                                 book['title'] ?? 'Untitled',
                                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textColor),
                               ),
-                              SizedBox(height: 8),
+                              const SizedBox(height: 8),
                               Text(
                                 'Last updated: ${_formatDate(book['updatedAt'] as Timestamp?)}',
                                 style: TextStyle(color: textColor.withOpacity(0.8)),
                               ),
-                              Spacer(),
+                              const Spacer(),
                               ElevatedButton(
-                                child: Text('Continue Writing'),
                                 style: ElevatedButton.styleFrom(backgroundColor: primaryColor),
                                 onPressed: () => Navigator.pushNamed(
                                   context,
                                   '/book_writing',
                                   arguments: {'bookId': doc.id},
                                 ),
+                                child: Text('Continue Writing'),
                               ),
                             ],
                           ),
@@ -273,7 +275,7 @@ class DashboardScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text('Quote of the Day', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: primaryColor)),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               Text(
                 '"The first draft is just you telling yourself the story." - Terry Pratchett',
                 style: TextStyle(fontStyle: FontStyle.italic, color: textColor),

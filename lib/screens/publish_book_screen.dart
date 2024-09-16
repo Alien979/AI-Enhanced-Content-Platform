@@ -6,7 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class PublishBookScreen extends StatefulWidget {
   final String bookId;
 
-  PublishBookScreen({required this.bookId});
+  const PublishBookScreen({super.key, required this.bookId});
 
   @override
   _PublishBookScreenState createState() => _PublishBookScreenState();
@@ -34,7 +34,7 @@ class _PublishBookScreenState extends State<PublishBookScreen> {
       print('Error loading book data: $e');
       setState(() => _isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error loading book data. Please try again.')),
+        const SnackBar(content: Text('Error loading book data. Please try again.')),
       );
     }
   }
@@ -51,13 +51,13 @@ class _PublishBookScreenState extends State<PublishBookScreen> {
         _isLoading = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Book published successfully!')),
+        const SnackBar(content: Text('Book published successfully!')),
       );
     } catch (e) {
       print('Error publishing book: $e');
       setState(() => _isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error publishing book. Please try again.')),
+        const SnackBar(content: Text('Error publishing book. Please try again.')),
       );
     }
   }
@@ -66,12 +66,12 @@ class _PublishBookScreenState extends State<PublishBookScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Publish Book'),
+        title: const Text('Publish Book'),
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
-              padding: EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -79,16 +79,16 @@ class _PublishBookScreenState extends State<PublishBookScreen> {
                     _bookData['title'] ?? 'Untitled',
                     style: Theme.of(context).textTheme.headlineMedium,
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   Text('Author: ${_bookData['authorName'] ?? 'Unknown'}'),
                   Text('Genre: ${_bookData['genre'] ?? 'Unspecified'}'),
                   Text('Chapters: ${_bookData['chapterCount'] ?? 0}'),
-                  SizedBox(height: 24),
+                  const SizedBox(height: 24),
                   Text(
                     'Book Preview',
                     style: Theme.of(context).textTheme.headlineSmall,
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   Card(
                     elevation: 4,
                     child: ListTile(
@@ -100,28 +100,28 @@ class _PublishBookScreenState extends State<PublishBookScreen> {
                       ),
                       title: Text(_bookData['title'] ?? 'Untitled'),
                       subtitle: Text(_bookData['authorName'] ?? 'Unknown'),
-                      trailing: Icon(Icons.arrow_forward_ios),
+                      trailing: const Icon(Icons.arrow_forward_ios),
                     ),
                   ),
-                  SizedBox(height: 24),
-                  Text(
+                  const SizedBox(height: 24),
+                  const Text(
                     'Publishing your book will make it visible to other users in the Public Library. '
                     'Make sure you have completed all chapters and reviewed your content before publishing.',
                     style: TextStyle(fontStyle: FontStyle.italic),
                   ),
-                  SizedBox(height: 24),
+                  const SizedBox(height: 24),
                   Center(
                     child: _bookData['isPublished'] == true
-                        ? Text(
+                        ? const Text(
                             'This book is already published!',
                             style: TextStyle(fontSize: 18, color: Colors.green),
                           )
                         : ElevatedButton(
                             onPressed: _publishBook,
-                            child: Text('Publish Book'),
                             style: ElevatedButton.styleFrom(
-                              padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                             ),
+                            child: Text('Publish Book'),
                           ),
                   ),
                 ],

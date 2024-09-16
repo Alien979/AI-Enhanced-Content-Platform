@@ -1,12 +1,10 @@
-// lib/screens/book_reader_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class BookReaderScreen extends StatefulWidget {
   final String bookId;
 
-  BookReaderScreen({required this.bookId});
+  const BookReaderScreen({super.key, required this.bookId});
 
   @override
   _BookReaderScreenState createState() => _BookReaderScreenState();
@@ -39,17 +37,24 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
           .get();
 
       List<String> chapters = chaptersSnapshot.docs
-          .map((doc) => doc['content'] as String)
+          .map((doc) => doc['content'] as String? ?? '')
           .toList();
 
-      setState(() {
-        _bookTitle = bookData['title'];
-        _chapters = chapters;
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _bookTitle = bookData['title'] ?? 'Untitled';
+          _chapters = chapters;
+          _isLoading = false;
+        });
+      }
     } catch (e) {
       print('Error loading book data: $e');
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Error loading book data. Please try again.')),
+        );
+      }
     }
   }
 
@@ -82,13 +87,13 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
         title: Text(_isLoading ? 'Loading...' : _bookTitle),
         actions: [
           IconButton(
-            icon: Icon(Icons.text_fields),
+            icon: const Icon(Icons.text_fields),
             onPressed: () {
               showDialog(
                 context: context,
                 builder: (BuildContext context) {
                   return AlertDialog(
-                    title: Text('Adjust Font Size'),
+                    title: const Text('Adjust Font Size'),
                     content: Slider(
                       value: _fontSize,
                       min: 12.0,
@@ -107,37 +112,39 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
         ],
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: EdgeInsets.all(16.0),
-                    child: Text(
-                      _chapters[_currentChapterIndex],
-                      style: TextStyle(fontSize: _fontSize),
+          ? const Center(child: CircularProgressIndicator())
+          : _chapters.isEmpty
+              ? const Center(child: Text('No chapters available for this book.'))
+              : Column(
+                  children: [
+                    Expanded(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Text(
+                          _chapters[_currentChapterIndex],
+                          style: TextStyle(fontSize: _fontSize),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      ElevatedButton(
-                        onPressed: _currentChapterIndex > 0 ? _previousChapter : null,
-                        child: Text('Previous Chapter'),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          ElevatedButton(
+                            onPressed: _currentChapterIndex > 0 ? _previousChapter : null,
+                            child: const Text('Previous Chapter'),
+                          ),
+                          Text('Chapter ${_currentChapterIndex + 1} of ${_chapters.length}'),
+                          ElevatedButton(
+                            onPressed: _currentChapterIndex < _chapters.length - 1 ? _nextChapter : null,
+                            child: const Text('Next Chapter'),
+                          ),
+                        ],
                       ),
-                      Text('Chapter ${_currentChapterIndex + 1}'),
-                      ElevatedButton(
-                        onPressed: _currentChapterIndex < _chapters.length - 1 ? _nextChapter : null,
-                        child: Text('Next Chapter'),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
     );
   }
 }

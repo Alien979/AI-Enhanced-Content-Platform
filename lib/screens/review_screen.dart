@@ -8,7 +8,7 @@ class ReviewScreen extends StatefulWidget {
   final String bookId;
   final String bookTitle;
 
-  ReviewScreen({required this.bookId, required this.bookTitle});
+  const ReviewScreen({super.key, required this.bookId, required this.bookTitle});
 
   @override
   _ReviewScreenState createState() => _ReviewScreenState();
@@ -19,12 +19,12 @@ class _ReviewScreenState extends State<ReviewScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   
   double _rating = 0;
-  TextEditingController _reviewController = TextEditingController();
+  final TextEditingController _reviewController = TextEditingController();
 
   Future<void> _submitReview() async {
     if (_rating == 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please select a rating')),
+        const SnackBar(content: Text('Please select a rating')),
       );
       return;
     }
@@ -50,13 +50,13 @@ class _ReviewScreenState extends State<ReviewScreen> {
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Review submitted successfully')),
+        const SnackBar(content: Text('Review submitted successfully')),
       );
       Navigator.pop(context);
     } catch (e) {
       print('Error submitting review: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error submitting review')),
+        const SnackBar(content: Text('Error submitting review')),
       );
     }
   }
@@ -68,11 +68,11 @@ class _ReviewScreenState extends State<ReviewScreen> {
         title: Text('Review: ${widget.bookTitle}'),
       ),
       body: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Rate this book:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text('Rate this book:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             Row(
               mainAxisSize: MainAxisSize.min,
               children: List.generate(5, (index) {
@@ -90,20 +90,20 @@ class _ReviewScreenState extends State<ReviewScreen> {
                 );
               }),
             ),
-            SizedBox(height: 20),
-            Text('Write your review:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 20),
+            const Text('Write your review:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             TextField(
               controller: _reviewController,
               maxLines: 5,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 hintText: 'Share your thoughts about this book...',
                 border: OutlineInputBorder(),
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: _submitReview,
-              child: Text('Submit Review'),
+              child: const Text('Submit Review'),
             ),
           ],
         ),

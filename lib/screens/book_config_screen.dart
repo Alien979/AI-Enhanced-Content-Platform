@@ -6,11 +6,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'package:image_picker/image_picker.dart';
 import 'dart:typed_data';
+import 'book_writing_guide_screen.dart';
 
 class BookConfigScreen extends StatefulWidget {
   final String? bookId;
 
-  BookConfigScreen({this.bookId});
+  const BookConfigScreen({super.key, this.bookId});
 
   @override
   _BookConfigScreenState createState() => _BookConfigScreenState();
@@ -32,12 +33,12 @@ class _BookConfigScreenState extends State<BookConfigScreen> {
   Uint8List? _imageBytes;
   String? _imageUrl;
 
-  List<String> _genres = ['Fiction', 'Non-fiction', 'Science Fiction', 'Fantasy', 'Mystery', 'Thriller', 'Romance', 'Horror', 'Biography', 'Self-help'];
-  List<String> _audiences = ['General', 'Children', 'Young Adult', 'Adult'];
-  List<String> _languages = ['English', 'Spanish', 'French', 'German', 'Chinese', 'Japanese', 'Other'];
+  final List<String> _genres = ['Fiction', 'Non-fiction', 'Science Fiction', 'Fantasy', 'Mystery', 'Thriller', 'Romance', 'Horror', 'Biography', 'Self-help'];
+  final List<String> _audiences = ['General', 'Children', 'Young Adult', 'Adult'];
+  final List<String> _languages = ['English', 'Spanish', 'French', 'German', 'Chinese', 'Japanese', 'Other'];
 
   bool _isLoading = false;
-  TextEditingController _tagController = TextEditingController();
+  final TextEditingController _tagController = TextEditingController();
 
   @override
   void initState() {
@@ -67,7 +68,7 @@ class _BookConfigScreenState extends State<BookConfigScreen> {
     } catch (e) {
       print('Error loading book data: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error loading book data. Please try again.')),
+        const SnackBar(content: Text('Error loading book data. Please try again.')),
       );
       setState(() => _isLoading = false);
     }
@@ -95,7 +96,7 @@ class _BookConfigScreenState extends State<BookConfigScreen> {
     } catch (e) {
       print('Error uploading image: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error uploading image. Please try again.')),
+        const SnackBar(content: Text('Error uploading image. Please try again.')),
       );
       return null;
     }
@@ -141,25 +142,30 @@ class _BookConfigScreenState extends State<BookConfigScreen> {
           bookData['createdAt'] = FieldValue.serverTimestamp();
           bookData['isPublished'] = false;
           DocumentReference docRef = await _firestore.collection('books').add(bookData);
-          Navigator.pushReplacementNamed(context, '/book_writing', arguments: {'bookId': docRef.id});
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => BookWritingGuideScreen(bookId: docRef.id),
+            ),
+          );
         } else {
           await _firestore.collection('books').doc(widget.bookId).update(bookData);
           Navigator.pop(context);
         }
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Book saved successfully!')),
+          const SnackBar(content: Text('Book saved successfully!')),
         );
       } catch (e) {
         print('Error saving book: $e');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error saving book. Please try again.')),
+          const SnackBar(content: Text('Error saving book. Please try again.')),
         );
       } finally {
         setState(() => _isLoading = false);
       }
     }
   }
-
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -167,154 +173,152 @@ class _BookConfigScreenState extends State<BookConfigScreen> {
         title: Text(widget.bookId == null ? 'Create New Book' : 'Edit Book'),
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Center(
-                        child: GestureDetector(
-                          onTap: _pickImage,
-                          child: Container(
-                            width: 150,
-                            height: 200,
-                            decoration: BoxDecoration(
-                              color: Colors.grey[200],
-                              border: Border.all(color: Colors.grey),
-                              borderRadius: BorderRadius.circular(8),
+              padding: const EdgeInsets.all(16.0),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: GestureDetector(
+                        onTap: _pickImage,
+                        child: Container(
+                          width: 150,
+                          height: 200,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[200],
+                            border: Border.all(color: Colors.grey),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: _imageBytes != null
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Image.memory(_imageBytes!, fit: BoxFit.cover),
+                                )
+                              : _imageUrl != null
+                                  ? ClipRRect(
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: Image.network(_imageUrl!, fit: BoxFit.cover),
+                                    )
+                                  : const Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(Icons.add_photo_alternate, size: 50),
+                                        Text('Add Cover Image', textAlign: TextAlign.center),
+                                      ],
+                                    ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      initialValue: _title,
+                      decoration: const InputDecoration(
+                        labelText: 'Book Title',
+                        border: OutlineInputBorder(),
+                      ),
+                      validator: (value) => value!.isEmpty ? 'Please enter a title' : null,
+                      onSaved: (value) => _title = value!,
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      initialValue: _summary,
+                      decoration: const InputDecoration(
+                        labelText: 'Book Summary',
+                        border: OutlineInputBorder(),
+                      ),
+                      maxLines: 3,
+                      validator: (value) => value!.isEmpty ? 'Please enter a summary' : null,
+                      onSaved: (value) => _summary = value!,
+                    ),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField(
+                      decoration: const InputDecoration(
+                        labelText: 'Genre',
+                        border: OutlineInputBorder(),
+                      ),
+                      value: _genre,
+                      items: _genres.map((genre) {
+                        return DropdownMenuItem(value: genre, child: Text(genre));
+                      }).toList(),
+                      onChanged: (value) => setState(() => _genre = value.toString()),
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      initialValue: _chapterCount.toString(),
+                      decoration: const InputDecoration(
+                        labelText: 'Number of Chapters',
+                        border: OutlineInputBorder(),
+                      ),
+                      keyboardType: TextInputType.number,
+                      validator: (value) => int.tryParse(value!) == null ? 'Please enter a valid number' : null,
+                      onSaved: (value) => _chapterCount = int.parse(value!),
+                    ),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField(
+                      decoration: const InputDecoration(
+                        labelText: 'Target Audience',
+                        border: OutlineInputBorder(),
+                      ),
+                      value: _targetAudience,
+                      items: _audiences.map((audience) {
+                        return DropdownMenuItem(value: audience, child: Text(audience));
+                      }).toList(),
+                      onChanged: (value) => setState(() => _targetAudience = value.toString()),
+                    ),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField(
+                      decoration: const InputDecoration(
+                        labelText: 'Language',
+                        border: OutlineInputBorder(),
+                      ),
+                      value: _language,
+                      items: _languages.map((language) {
+                        return DropdownMenuItem(value: language, child: Text(language));
+                      }).toList(),
+                      onChanged: (value) => setState(() => _language = value.toString()),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text('Tags:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    Wrap(
+                      spacing: 8,
+                      children: _tags.map((tag) => Chip(
+                        label: Text(tag),
+                        onDeleted: () => _removeTag(tag),
+                      )).toList(),
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _tagController,
+                            decoration: const InputDecoration(
+                              hintText: 'Add a tag',
+                              border: OutlineInputBorder(),
                             ),
-                            child: _imageBytes != null
-                                ? ClipRRect(
-                                    borderRadius: BorderRadius.circular(8),
-                                    child: Image.memory(_imageBytes!, fit: BoxFit.cover),
-                                  )
-                                : _imageUrl != null
-                                    ? ClipRRect(
-                                        borderRadius: BorderRadius.circular(8),
-                                        child: Image.network(_imageUrl!, fit: BoxFit.cover),
-                                      )
-                                    : Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Icon(Icons.add_photo_alternate, size: 50),
-                                          Text('Add Cover Image', textAlign: TextAlign.center),
-                                        ],
-                                      ),
+                            onSubmitted: (_) => _addTag(),
                           ),
                         ),
-                      ),
-                      SizedBox(height: 16),
-                      TextFormField(
-                        initialValue: _title,
-                        decoration: InputDecoration(
-                          labelText: 'Book Title',
-                          border: OutlineInputBorder(),
+                        const SizedBox(width: 8),
+                        ElevatedButton(
+                          onPressed: _addTag,
+                          child: Text('Add Tag'),
                         ),
-                        validator: (value) => value!.isEmpty ? 'Please enter a title' : null,
-                        onSaved: (value) => _title = value!,
-                      ),
-                      SizedBox(height: 16),
-                      TextFormField(
-                        initialValue: _summary,
-                        decoration: InputDecoration(
-                          labelText: 'Book Summary',
-                          border: OutlineInputBorder(),
+                      ],
+                    ),
+                    const SizedBox(height: 32),
+                    Center(
+                      child: ElevatedButton(
+                        onPressed: _submitForm,
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                         ),
-                        maxLines: 3,
-                        validator: (value) => value!.isEmpty ? 'Please enter a summary' : null,
-                        onSaved: (value) => _summary = value!,
+                        child: Text(widget.bookId == null ? 'Create Book' : 'Update Book'),
                       ),
-                      SizedBox(height: 16),
-                      DropdownButtonFormField(
-                        decoration: InputDecoration(
-                          labelText: 'Genre',
-                          border: OutlineInputBorder(),
-                        ),
-                        value: _genre,
-                        items: _genres.map((genre) {
-                          return DropdownMenuItem(value: genre, child: Text(genre));
-                        }).toList(),
-                        onChanged: (value) => setState(() => _genre = value.toString()),
-                      ),
-                      SizedBox(height: 16),
-                      TextFormField(
-                        initialValue: _chapterCount.toString(),
-                        decoration: InputDecoration(
-                          labelText: 'Number of Chapters',
-                          border: OutlineInputBorder(),
-                        ),
-                        keyboardType: TextInputType.number,
-                        validator: (value) => int.tryParse(value!) == null ? 'Please enter a valid number' : null,
-                        onSaved: (value) => _chapterCount = int.parse(value!),
-                      ),
-                      SizedBox(height: 16),
-                      DropdownButtonFormField(
-                        decoration: InputDecoration(
-                          labelText: 'Target Audience',
-                          border: OutlineInputBorder(),
-                        ),
-                        value: _targetAudience,
-                        items: _audiences.map((audience) {
-                          return DropdownMenuItem(value: audience, child: Text(audience));
-                        }).toList(),
-                        onChanged: (value) => setState(() => _targetAudience = value.toString()),
-                      ),
-                      SizedBox(height: 16),
-                      DropdownButtonFormField(
-                        decoration: InputDecoration(
-                          labelText: 'Language',
-                          border: OutlineInputBorder(),
-                        ),
-                        value: _language,
-                        items: _languages.map((language) {
-                          return DropdownMenuItem(value: language, child: Text(language));
-                        }).toList(),
-                        onChanged: (value) => setState(() => _language = value.toString()),
-                      ),
-                      SizedBox(height: 16),
-                      Text('Tags:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                      Wrap(
-                        spacing: 8,
-                        children: _tags.map((tag) => Chip(
-                          label: Text(tag),
-                          onDeleted: () => _removeTag(tag),
-                        )).toList(),
-                      ),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: TextField(
-                              controller: _tagController,
-                              decoration: InputDecoration(
-                                hintText: 'Add a tag',
-                                border: OutlineInputBorder(),
-                              ),
-                              onSubmitted: (_) => _addTag(),
-                            ),
-                          ),
-                          SizedBox(width: 8),
-                          ElevatedButton(
-                            child: Text('Add Tag'),
-                            onPressed: _addTag,
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 32),
-                      Center(
-                        child: ElevatedButton(
-                          child: Text(widget.bookId == null ? 'Create Book' : 'Update Book'),
-                          onPressed: _submitForm,
-                          style: ElevatedButton.styleFrom(
-                            padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),

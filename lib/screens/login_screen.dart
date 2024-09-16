@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
@@ -20,15 +22,15 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Login'),
+        title: const Text('Login'),
       ),
       body: Container(
-        padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 50.0),
+        padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 50.0),
         child: Form(
           key: _formKey,
           child: Column(
             children: <Widget>[
-              SizedBox(height: 20.0),
+              const SizedBox(height: 20.0),
               TextFormField(
                 decoration: InputDecoration(
                   hintText: 'Email',
@@ -43,7 +45,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   setState(() => email = val);
                 },
               ),
-              SizedBox(height: 20.0),
+              const SizedBox(height: 20.0),
               TextFormField(
                 decoration: InputDecoration(
                   hintText: 'Password',
@@ -59,12 +61,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   setState(() => password = val);
                 },
               ),
-              SizedBox(height: 20.0),
+              const SizedBox(height: 20.0),
               ElevatedButton(
-                child: Text('Sign In'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
-                  padding: EdgeInsets.symmetric(horizontal: 50, vertical: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 10),
                 ),
                 onPressed: () async {
                   if (_formKey.currentState!.validate()) {
@@ -76,15 +77,16 @@ class _LoginScreenState extends State<LoginScreen> {
                     }
                   }
                 },
+                child: Text('Sign In'),
               ),
-              SizedBox(height: 12.0),
+              const SizedBox(height: 12.0),
               Text(
                 error,
-                style: TextStyle(color: Colors.red, fontSize: 14.0),
+                style: const TextStyle(color: Colors.red, fontSize: 14.0),
               ),
-              SizedBox(height: 20.0),
+              const SizedBox(height: 20.0),
               TextButton(
-                child: Text('Need an account? Register'),
+                child: const Text('Need an account? Register'),
                 onPressed: () {
                   Navigator.pushNamed(context, '/register');
                 },
