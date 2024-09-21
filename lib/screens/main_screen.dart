@@ -24,9 +24,9 @@ class _MainScreenState extends State<MainScreen> {
 
   final List<Widget> _screens = [
     DashboardScreen(),
-    BookLibraryScreen(),
-    LibraryScreen(),
-    UserProfileScreen(),
+    const BookLibraryScreen(),
+    const LibraryScreen(),
+    const UserProfileScreen(),
   ];
 
   @override
@@ -88,7 +88,7 @@ class _MainScreenState extends State<MainScreen> {
                   Navigator.pop(context);
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => BookConfigScreen()),
+                    MaterialPageRoute(builder: (context) => const BookConfigScreen()),
                   );
                 },
               ),

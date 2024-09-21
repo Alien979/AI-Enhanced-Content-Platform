@@ -121,7 +121,7 @@ class _PublishBookScreenState extends State<PublishBookScreen> {
                             style: ElevatedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                             ),
-                            child: Text('Publish Book'),
+                            child: const Text('Publish Book'),
                           ),
                   ),
                 ],

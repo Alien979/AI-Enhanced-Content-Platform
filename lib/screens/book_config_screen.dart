@@ -1,5 +1,3 @@
-// lib/screens/book_config_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -11,7 +9,7 @@ import 'book_writing_guide_screen.dart';
 class BookConfigScreen extends StatefulWidget {
   final String? bookId;
 
-  const BookConfigScreen({super.key, this.bookId});
+  const BookConfigScreen({Key? key, this.bookId}) : super(key: key);
 
   @override
   _BookConfigScreenState createState() => _BookConfigScreenState();
@@ -26,7 +24,6 @@ class _BookConfigScreenState extends State<BookConfigScreen> {
   String _title = '';
   String _summary = '';
   String _genre = 'Fiction';
-  int _chapterCount = 1;
   String _targetAudience = 'General';
   String _language = 'English';
   List<String> _tags = [];
@@ -58,7 +55,6 @@ class _BookConfigScreenState extends State<BookConfigScreen> {
         _title = bookData['title'] ?? '';
         _summary = bookData['summary'] ?? '';
         _genre = bookData['genre'] ?? 'Fiction';
-        _chapterCount = bookData['chapterCount'] ?? 1;
         _targetAudience = bookData['targetAudience'] ?? 'General';
         _language = bookData['language'] ?? 'English';
         _tags = List<String>.from(bookData['tags'] ?? []);
@@ -129,7 +125,6 @@ class _BookConfigScreenState extends State<BookConfigScreen> {
           'title': _title,
           'summary': _summary,
           'genre': _genre,
-          'chapterCount': _chapterCount,
           'targetAudience': _targetAudience,
           'language': _language,
           'tags': _tags,
@@ -142,6 +137,14 @@ class _BookConfigScreenState extends State<BookConfigScreen> {
           bookData['createdAt'] = FieldValue.serverTimestamp();
           bookData['isPublished'] = false;
           DocumentReference docRef = await _firestore.collection('books').add(bookData);
+          
+          // Create the first chapter
+          await _firestore.collection('books').doc(docRef.id).collection('chapters').doc('1').set({
+            'content': '',
+            'chapterNumber': 1,
+            'lastModified': FieldValue.serverTimestamp(),
+          });
+
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
@@ -246,17 +249,6 @@ class _BookConfigScreenState extends State<BookConfigScreen> {
                       onChanged: (value) => setState(() => _genre = value.toString()),
                     ),
                     const SizedBox(height: 16),
-                    TextFormField(
-                      initialValue: _chapterCount.toString(),
-                      decoration: const InputDecoration(
-                        labelText: 'Number of Chapters',
-                        border: OutlineInputBorder(),
-                      ),
-                      keyboardType: TextInputType.number,
-                      validator: (value) => int.tryParse(value!) == null ? 'Please enter a valid number' : null,
-                      onSaved: (value) => _chapterCount = int.parse(value!),
-                    ),
-                    const SizedBox(height: 16),
                     DropdownButtonFormField(
                       decoration: const InputDecoration(
                         labelText: 'Target Audience',
@@ -304,7 +296,7 @@ class _BookConfigScreenState extends State<BookConfigScreen> {
                         const SizedBox(width: 8),
                         ElevatedButton(
                           onPressed: _addTag,
-                          child: Text('Add Tag'),
+                          child: const Text('Add Tag'),
                         ),
                       ],
                     ),

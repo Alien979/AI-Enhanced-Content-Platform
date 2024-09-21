@@ -68,7 +68,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     const SizedBox(height: 20),
                     ElevatedButton(
                       onPressed: _saveChanges,
-                      child: Text('Save Changes'),
+                      child: const Text('Save Changes'),
                     ),
                   ],
                 ),

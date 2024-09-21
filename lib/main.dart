@@ -36,7 +36,7 @@ void main() async {
   runApp(
     ChangeNotifierProvider(
       create: (context) => WritingModeProvider(),
-      child: MyApp(),
+      child: const MyApp(),
     ),
   );
 }
@@ -53,18 +53,18 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.blue).copyWith(secondary: Colors.blueAccent),
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: AuthWrapper(),
+      home: const AuthWrapper(),
       routes: {
-        '/login': (context) => LoginScreen(),
-        '/register': (context) => RegisterScreen(),
-        '/home': (context) => MainScreen(),
+        '/login': (context) => const LoginScreen(),
+        '/register': (context) => const RegisterScreen(),
+        '/home': (context) => const MainScreen(),
         '/dashboard': (context) => DashboardScreen(),
-        '/books': (context) => BookLibraryScreen(),
-        '/book_config': (context) => BookConfigScreen(),
-        '/library': (context) => LibraryScreen(),
-        '/user_profile': (context) => UserProfileScreen(),
-        '/ai_settings': (context) => AISettingsScreen(),
-        '/onboarding': (context) => OnboardingScreen(),
+        '/books': (context) => const BookLibraryScreen(),
+        '/book_config': (context) => const BookConfigScreen(),
+        '/library': (context) => const LibraryScreen(),
+        '/user_profile': (context) => const UserProfileScreen(),
+        '/ai_settings': (context) => const AISettingsScreen(),
+        '/onboarding': (context) => const OnboardingScreen(),
       },
       onGenerateRoute: (settings) {
         final args = settings.arguments as Map<String, dynamic>?;
@@ -110,7 +110,7 @@ class AuthWrapper extends StatelessWidget {
           final onboardingComplete = prefs?.getBool('onboarding_complete') ?? false;
 
           if (!onboardingComplete) {
-            return OnboardingScreen();
+            return const OnboardingScreen();
           }
 
           return StreamBuilder<User?>(
@@ -119,15 +119,15 @@ class AuthWrapper extends StatelessWidget {
               if (snapshot.connectionState == ConnectionState.active) {
                 User? user = snapshot.data;
                 if (user == null) {
-                  return LoginScreen();
+                  return const LoginScreen();
                 }
-                return MainScreen();
+                return const MainScreen();
               }
-              return SplashScreen();
+              return const SplashScreen();
             },
           );
         }
-        return SplashScreen();
+        return const SplashScreen();
       },
     );
   }

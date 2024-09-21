@@ -1,5 +1,3 @@
-// lib/services/ai_service.dart
-
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -16,8 +14,7 @@ class AIService {
   }) async {
     try {
       // Limit the context to avoid exceeding token limits
-      const int maxContextLength =
-          2000; // Adjust this value based on your needs
+      final int maxContextLength = 2000; // Adjust this value based on your needs
       String fullContext = '';
 
       // Add current chapter first
@@ -38,6 +35,7 @@ class AIService {
         Uri.parse('$_apiUrl?key=$_apiKey'),
         headers: {
           'Content-Type': 'application/json',
+          'Origin': 'http://localhost:3000', // Add this line for CORS
         },
         body: jsonEncode({
           "contents": [
@@ -48,8 +46,8 @@ class AIService {
 
 $fullContext
 
-Based on this context and the current state of the story, please $prompt. 
-Ensure your response is consistent with the existing narrative and writing style. 
+Based on this context and the current state of the story, please $prompt.
+Ensure your response is consistent with the existing narrative and writing style.
 Do not repeat information already provided. Focus on moving the story forward or elaborating on the requested details.
 """
                 }
@@ -96,16 +94,17 @@ Do not repeat information already provided. Focus on moving the story forward or
           throw Exception('Unexpected response format from AI service');
         }
       } else {
+        print('API Error: Status ${response.statusCode}, Body: ${response.body}');
         throw Exception('Failed to get AI assistance: ${response.body}');
       }
     } catch (e) {
       print('Error getting AI assistance: $e');
-      return 'Error: Unable to get AI assistance at this time. Please try again later.';
+      return 'Error: Unable to get AI assistance at this time. Please try again later. (Error details: ${e.toString()})';
     }
   }
 
   static String _summarizeText(String text, {int maxLength = 200}) {
     if (text.length <= maxLength) return text;
-    return '${text.substring(0, maxLength)}...';
+    return text.substring(0, maxLength) + '...';
   }
 }

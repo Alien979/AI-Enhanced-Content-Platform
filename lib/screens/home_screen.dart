@@ -29,7 +29,7 @@ class HomeScreen extends StatelessWidget {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => UserProfileScreen()),
+                MaterialPageRoute(builder: (context) => const UserProfileScreen()),
               );
             },
           ),
@@ -70,7 +70,7 @@ class HomeScreen extends StatelessWidget {
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                 ),
-                child: Text('Create New Book'),
+                child: const Text('Create New Book'),
               ),
             ],
           ),

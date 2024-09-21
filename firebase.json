@@ -1,1 +1,35 @@
-{"firestore":{"rules":"firestore.rules","indexes":"firestore.indexes.json"},"hosting":{"public":"build/web","ignore":["firebase.json","**/.*","**/node_modules/**"],"rewrites":[{"source":"**","destination":"/index.html"}]},"storage":{"rules":"storage.rules"},"flutter":{"platforms":{"dart":{"lib/firebase_options.dart":{"projectId":"monday-d7ae4","configurations":{"web":"1:1086251428669:web:a6377d438f0b334f0a7354"}}}}}}
+{
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "hosting": {
+    "public": "build/web",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  },
+  "storage": {
+    "rules": "storage.rules"
+  },
+  "flutter": {
+    "platforms": {
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "monday-d7ae4",
+          "configurations": {
+            "web": "1:1086251428669:web:a6377d438f0b334f0a7354"
+          }
+        }
+      }
+    }
+  }
+}

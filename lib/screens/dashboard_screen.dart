@@ -2,8 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'dart:async';
+import '../services/quote_service.dart';
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
+  const DashboardScreen({Key? key}) : super(key: key);
+
+  @override
+  _DashboardScreenState createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
@@ -13,7 +22,29 @@ class DashboardScreen extends StatelessWidget {
   final Color backgroundColor = const Color(0xFFF5F5F5);
   final Color textColor = const Color(0xFF333333);
 
-  DashboardScreen({super.key});
+  String _currentQuote = 'Loading...';
+  Timer? _quoteTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadQuote();
+    // Set up a timer to refresh the quote every hour
+    _quoteTimer = Timer.periodic(Duration(hours: 1), (Timer t) => _loadQuote());
+  }
+
+  @override
+  void dispose() {
+    _quoteTimer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _loadQuote() async {
+    String quote = await QuoteService.getOrGenerateQuote();
+    setState(() {
+      _currentQuote = quote;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +63,7 @@ class DashboardScreen extends StatelessWidget {
       ),
       body: RefreshIndicator(
         onRefresh: () async {
-          // Implement refresh logic if needed
+          await _loadQuote();
         },
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
@@ -246,7 +277,7 @@ class DashboardScreen extends StatelessWidget {
                                   '/book_writing',
                                   arguments: {'bookId': doc.id},
                                 ),
-                                child: Text('Continue Writing'),
+                                child: const Text('Continue Writing'),
                               ),
                             ],
                           ),
@@ -274,10 +305,10 @@ class DashboardScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Quote of the Day', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: primaryColor)),
+              Text('Quote of the Hour', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: primaryColor)),
               const SizedBox(height: 10),
               Text(
-                '"The first draft is just you telling yourself the story." - Terry Pratchett',
+                _currentQuote,
                 style: TextStyle(fontStyle: FontStyle.italic, color: textColor),
               ),
             ],

@@ -77,7 +77,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     }
                   }
                 },
-                child: Text('Register'),
+                child: const Text('Register'),
               ),
               const SizedBox(height: 12.0),
               Text(

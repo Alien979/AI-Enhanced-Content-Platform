@@ -253,7 +253,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           _buildAccountOption('Edit Profile', Icons.edit, () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => EditProfileScreen()),
+              MaterialPageRoute(builder: (context) => const EditProfileScreen()),
             ).then((_) {
               setState(() {
                 _userDataFuture = _userService.getUserData();
@@ -263,19 +263,19 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           _buildAccountOption('Notification Settings', Icons.notifications, () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => NotificationSettingsScreen()),
+              MaterialPageRoute(builder: (context) => const NotificationSettingsScreen()),
             );
           }),
           _buildAccountOption('Privacy Settings', Icons.lock, () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => PrivacySettingsScreen()),
+              MaterialPageRoute(builder: (context) => const PrivacySettingsScreen()),
             );
           }),
           _buildAccountOption('Help & Support', Icons.help, () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => HelpSupportScreen()),
+              MaterialPageRoute(builder: (context) => const HelpSupportScreen()),
             );
           }),
           _buildAccountOption('Log Out', Icons.exit_to_app, () async {
