@@ -6,7 +6,7 @@ import 'dart:async';
 import '../services/quote_service.dart';
 
 class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({Key? key}) : super(key: key);
+  const DashboardScreen({super.key});
 
   @override
   _DashboardScreenState createState() => _DashboardScreenState();
@@ -30,7 +30,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     super.initState();
     _loadQuote();
     // Set up a timer to refresh the quote every hour
-    _quoteTimer = Timer.periodic(Duration(hours: 1), (Timer t) => _loadQuote());
+    _quoteTimer = Timer.periodic(const Duration(hours: 1), (Timer t) => _loadQuote());
   }
 
   @override
@@ -39,12 +39,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
     super.dispose();
   }
 
-  Future<void> _loadQuote() async {
-    String quote = await QuoteService.getOrGenerateQuote();
+Future<void> _loadQuote() async {
+  String quote = await QuoteService.getOrGenerateQuote();
+  if (mounted) {
     setState(() {
       _currentQuote = quote;
     });
   }
+}
 
   @override
   Widget build(BuildContext context) {

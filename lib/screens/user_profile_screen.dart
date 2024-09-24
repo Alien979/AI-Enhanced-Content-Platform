@@ -8,6 +8,7 @@ import 'notification_settings_screen.dart';
 import 'privacy_settings_screen.dart';
 import 'help_support_screen.dart';
 import '../services/user_service.dart';
+import '../services/book_service.dart';
 
 class UserProfileScreen extends StatefulWidget {
   const UserProfileScreen({super.key});
@@ -18,56 +19,68 @@ class UserProfileScreen extends StatefulWidget {
 
 class _UserProfileScreenState extends State<UserProfileScreen> {
   final UserService _userService = UserService();
+  final BookService _bookService = BookService();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  
   late Future<Map<String, dynamic>> _userDataFuture;
+  late Future<Map<String, dynamic>> _userStatsFuture;
 
   @override
   void initState() {
     super.initState();
     _userDataFuture = _userService.getUserData();
+    _userStatsFuture = _bookService.getUserBookStats(_auth.currentUser!.uid);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F7F7),
       appBar: AppBar(
-        title: const Text('Profile', style: TextStyle(color: Color(0xFF333333))),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+        title: const Text('Profile', style: TextStyle(color: Colors.white)),
+        backgroundColor: Colors.blue,
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings, color: Color(0xFF333333)),
-            onPressed: () {
-              // Navigate to settings screen
-            },
+            icon: const Icon(Icons.edit, color: Colors.white),
+            onPressed: () => _navigateToEditProfile(),
           ),
         ],
       ),
-      body: FutureBuilder<Map<String, dynamic>>(
-        future: _userDataFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFE6B17E))));
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (!snapshot.hasData) {
-            return const Center(child: Text('No user data found'));
-          }
-
-          final userData = snapshot.data!;
-          return SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildProfileHeader(userData),
-                _buildUserStats(userData),
-                _buildReadingProgress(userData),
-                _buildRecentActivity(userData),
-                _buildAccountOptions(),
-              ],
-            ),
-          );
+      body: RefreshIndicator(
+        onRefresh: () async {
+          setState(() {
+            _userDataFuture = _userService.getUserData();
+            _userStatsFuture = _bookService.getUserBookStats(_auth.currentUser!.uid);
+          });
         },
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: FutureBuilder<Map<String, dynamic>>(
+            future: Future.wait([_userDataFuture, _userStatsFuture]).then((results) {
+              return {...results[0], ...results[1]};
+            }),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              } else if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}'));
+              } else if (!snapshot.hasData) {
+                return const Center(child: Text('No user data found'));
+              }
+
+              final userData = snapshot.data!;
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildProfileHeader(userData),
+                  _buildUserStats(userData),
+                  _buildReadingProgress(userData),
+                  _buildRecentActivity(userData),
+                  _buildAccountOptions(),
+                ],
+              );
+            },
+          ),
+        ),
       ),
     );
   }
@@ -91,16 +104,16 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               children: [
                 Text(
                   userData['displayName'] ?? 'Anonymous Writer',
-                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF333333)),
+                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
                 Text(
                   userData['email'] ?? '',
-                  style: const TextStyle(fontSize: 16, color: Color(0xFF8BA888)),
+                  style: const TextStyle(fontSize: 16, color: Colors.grey),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   userData['bio'] ?? 'No bio available',
-                  style: const TextStyle(fontSize: 14, color: Color(0xFF333333)),
+                  style: const TextStyle(fontSize: 14),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -120,7 +133,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         children: [
           const Text(
             'Your Stats',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF333333)),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
           Row(
@@ -141,11 +154,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       children: [
         Text(
           value.toString(),
-          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFFE6B17E)),
+          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.blue),
         ),
         Text(
           label,
-          style: const TextStyle(fontSize: 14, color: Color(0xFF333333)),
+          style: const TextStyle(fontSize: 14),
         ),
       ],
     );
@@ -159,16 +172,16 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
     return Container(
       padding: const EdgeInsets.all(16),
+      height: 200,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
             'Reading Progress',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF333333)),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
-          SizedBox(
-            height: 200,
+          Expanded(
             child: LineChart(
               LineChartData(
                 gridData: const FlGridData(show: false),
@@ -182,11 +195,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   LineChartBarData(
                     spots: spots,
                     isCurved: true,
-                    color: const Color(0xFFE6B17E),
+                    color: Colors.blue,
                     barWidth: 4,
                     isStrokeCapRound: true,
                     dotData: const FlDotData(show: false),
-                    belowBarData: BarAreaData(show: true, color: const Color(0xFFE6B17E).withOpacity(0.1)),
+                    belowBarData: BarAreaData(show: true, color: Colors.blue.withOpacity(0.1)),
                   ),
                 ],
               ),
@@ -198,7 +211,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   }
 
   Widget _buildRecentActivity(Map<String, dynamic> userData) {
-    // Implement recent activity logic here
+    final recentActivity = userData['recentActivity'] as List<dynamic>? ?? [];
     return Container(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -206,33 +219,39 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         children: [
           const Text(
             'Recent Activity',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF333333)),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
-          _buildActivityItem('Started writing "The Lost City"', '2 days ago'),
-          _buildActivityItem('Finished reading "The Great Gatsby"', '5 days ago'),
-          _buildActivityItem('Published "My First Novel"', '1 week ago'),
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: recentActivity.length,
+            itemBuilder: (context, index) {
+              final activity = recentActivity[index];
+              return _buildActivityItem(activity['action'], activity['timestamp']);
+            },
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildActivityItem(String activity, String time) {
+  Widget _buildActivityItem(String activity, Timestamp time) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0),
       child: Row(
         children: [
-          const Icon(Icons.fiber_manual_record, size: 12, color: Color(0xFF8BA888)),
+          const Icon(Icons.fiber_manual_record, size: 12, color: Colors.blue),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
               activity,
-              style: const TextStyle(fontSize: 14, color: Color(0xFF333333)),
+              style: const TextStyle(fontSize: 14),
             ),
           ),
           Text(
-            time,
-            style: const TextStyle(fontSize: 12, color: Color(0xFF8BA888)),
+            _formatTimestamp(time),
+            style: const TextStyle(fontSize: 12, color: Colors.grey),
           ),
         ],
       ),
@@ -247,19 +266,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         children: [
           const Text(
             'Account',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF333333)),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
-          _buildAccountOption('Edit Profile', Icons.edit, () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const EditProfileScreen()),
-            ).then((_) {
-              setState(() {
-                _userDataFuture = _userService.getUserData();
-              });
-            });
-          }),
+          _buildAccountOption('Edit Profile', Icons.edit, _navigateToEditProfile),
           _buildAccountOption('Notification Settings', Icons.notifications, () {
             Navigator.push(
               context,
@@ -278,10 +288,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               MaterialPageRoute(builder: (context) => const HelpSupportScreen()),
             );
           }),
-          _buildAccountOption('Log Out', Icons.exit_to_app, () async {
-            await FirebaseAuth.instance.signOut();
-            Navigator.of(context).pushReplacementNamed('/login');
-          }),
+          _buildAccountOption('Log Out', Icons.exit_to_app, _signOut),
         ],
       ),
     );
@@ -289,10 +296,43 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
   Widget _buildAccountOption(String title, IconData icon, VoidCallback onTap) {
     return ListTile(
-      leading: Icon(icon, color: const Color(0xFFE6B17E)),
-      title: Text(title, style: const TextStyle(color: Color(0xFF333333))),
-      trailing: const Icon(Icons.chevron_right, color: Color(0xFF8BA888)),
+      leading: Icon(icon, color: Colors.blue),
+      title: Text(title),
+      trailing: const Icon(Icons.chevron_right),
       onTap: onTap,
     );
+  }
+
+  void _navigateToEditProfile() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const EditProfileScreen()),
+    );
+    if (result == true) {
+      setState(() {
+        _userDataFuture = _userService.getUserData();
+      });
+    }
+  }
+
+  void _signOut() async {
+    await _auth.signOut();
+    Navigator.of(context).pushReplacementNamed('/login');
+  }
+
+  String _formatTimestamp(Timestamp timestamp) {
+    final now = DateTime.now();
+    final date = timestamp.toDate();
+    final difference = now.difference(date);
+
+    if (difference.inDays > 0) {
+      return '${difference.inDays}d ago';
+    } else if (difference.inHours > 0) {
+      return '${difference.inHours}h ago';
+    } else if (difference.inMinutes > 0) {
+      return '${difference.inMinutes}m ago';
+    } else {
+      return 'Just now';
+    }
   }
 }

@@ -13,7 +13,7 @@ import 'publish_book_screen.dart';
 class BookWritingScreen extends StatefulWidget {
   final String bookId;
 
-  const BookWritingScreen({Key? key, required this.bookId}) : super(key: key);
+  const BookWritingScreen({super.key, required this.bookId});
 
   @override
   _BookWritingScreenState createState() => _BookWritingScreenState();
@@ -40,7 +40,7 @@ class _BookWritingScreenState extends State<BookWritingScreen> {
   double _aiTemperature = 0.7;
   int _aiMaxTokens = 150;
   String _writingStyle = 'Neutral';
-  List<String> _writingStyles = [
+  final List<String> _writingStyles = [
     'Neutral',
     'Formal',
     'Casual',
@@ -263,7 +263,7 @@ class _BookWritingScreenState extends State<BookWritingScreen> {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setState) {
             return AlertDialog(
-              title: Text('AI Assistant Settings'),
+              title: const Text('AI Assistant Settings'),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -278,7 +278,7 @@ class _BookWritingScreenState extends State<BookWritingScreen> {
                       setState(() => _aiTemperature = value);
                     },
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   Text('Max Tokens: $_aiMaxTokens'),
                   Slider(
                     value: _aiMaxTokens.toDouble(),
@@ -289,9 +289,9 @@ class _BookWritingScreenState extends State<BookWritingScreen> {
                       setState(() => _aiMaxTokens = value.round());
                     },
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
-                    decoration: InputDecoration(labelText: 'Writing Style'),
+                    decoration: const InputDecoration(labelText: 'Writing Style'),
                     value: _writingStyle,
                     items: _writingStyles.map((style) {
                       return DropdownMenuItem(value: style, child: Text(style));
@@ -304,11 +304,11 @@ class _BookWritingScreenState extends State<BookWritingScreen> {
               ),
               actions: [
                 TextButton(
-                  child: Text('Cancel'),
+                  child: const Text('Cancel'),
                   onPressed: () => Navigator.of(context).pop(),
                 ),
                 ElevatedButton(
-                  child: Text('Save'),
+                  child: const Text('Save'),
                   onPressed: () {
                     Navigator.of(context).pop();
                     this.setState(() {}); // Update the main screen
@@ -476,7 +476,7 @@ class _BookWritingScreenState extends State<BookWritingScreen> {
                     _isAILoading ? 'Getting AI Help...' : 'Get AI Assistance'),
               ),
               IconButton(
-                icon: Icon(Icons.settings),
+                icon: const Icon(Icons.settings),
                 onPressed: _showAISettingsDialog,
                 tooltip: 'AI Settings',
               ),
@@ -499,7 +499,7 @@ class _BookWritingScreenState extends State<BookWritingScreen> {
             ),
           ],
           const SizedBox(height: 16),
-          Text('Current Settings:',
+          const Text('Current Settings:',
               style: TextStyle(fontWeight: FontWeight.bold)),
           Text('Temperature: ${_aiTemperature.toStringAsFixed(2)}'),
           Text('Max Tokens: $_aiMaxTokens'),

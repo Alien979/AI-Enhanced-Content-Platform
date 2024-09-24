@@ -10,14 +10,14 @@ class ChapterSidebar extends StatelessWidget {
   final VoidCallback onClose;
 
   const ChapterSidebar({
-    Key? key,
+    super.key,
     required this.bookId,
     required this.currentChapter,
     required this.onChapterSelected,
     required this.onAddChapter,
     required this.isVisible,
     required this.onClose,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -28,10 +28,10 @@ class ChapterSidebar extends StatelessWidget {
         child: Column(
           children: [
             DrawerHeader(
-              child: Text('Chapters'),
               decoration: BoxDecoration(
                 color: Theme.of(context).primaryColor,
               ),
+              child: Text('Chapters'),
             ),
             Expanded(
               child: StreamBuilder<QuerySnapshot>(
@@ -43,7 +43,7 @@ class ChapterSidebar extends StatelessWidget {
                     .snapshots(),
                 builder: (context, snapshot) {
                   if (!snapshot.hasData) {
-                    return Center(child: CircularProgressIndicator());
+                    return const Center(child: CircularProgressIndicator());
                   }
 
                   var chapters = snapshot.data!.docs;
@@ -67,8 +67,8 @@ class ChapterSidebar extends StatelessWidget {
                         );
                       } else {
                         return ListTile(
-                          title: Text('Add Chapter'),
-                          leading: Icon(Icons.add),
+                          title: const Text('Add Chapter'),
+                          leading: const Icon(Icons.add),
                           onTap: onAddChapter,
                         );
                       }

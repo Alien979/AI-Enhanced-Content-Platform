@@ -50,7 +50,8 @@ class MyApp extends StatelessWidget {
       title: 'AI Book Writing Platform',
       theme: ThemeData(
         primarySwatch: Colors.blue,
-        colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.blue).copyWith(secondary: Colors.blueAccent),
+        colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.blue)
+            .copyWith(secondary: Colors.blueAccent),
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       home: const AuthWrapper(),
@@ -58,7 +59,7 @@ class MyApp extends StatelessWidget {
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(),
         '/home': (context) => const MainScreen(),
-        '/dashboard': (context) => DashboardScreen(),
+        '/dashboard': (context) => const DashboardScreen(),
         '/books': (context) => const BookLibraryScreen(),
         '/book_config': (context) => const BookConfigScreen(),
         '/library': (context) => const LibraryScreen(),
@@ -75,7 +76,8 @@ class MyApp extends StatelessWidget {
             );
           case '/book_statistics':
             return MaterialPageRoute(
-              builder: (context) => BookStatisticsScreen(bookId: args?['bookId']),
+              builder: (context) =>
+                  BookStatisticsScreen(bookId: args?['bookId']),
             );
           case '/book_reader':
             return MaterialPageRoute(
@@ -87,7 +89,8 @@ class MyApp extends StatelessWidget {
             );
           case '/book_writing_guide':
             return MaterialPageRoute(
-              builder: (context) => BookWritingGuideScreen(bookId: args?['bookId']),
+              builder: (context) =>
+                  BookWritingGuideScreen(bookId: args?['bookId']),
             );
           default:
             return null;
@@ -107,7 +110,8 @@ class AuthWrapper extends StatelessWidget {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
           final prefs = snapshot.data;
-          final onboardingComplete = prefs?.getBool('onboarding_complete') ?? false;
+          final onboardingComplete =
+              prefs?.getBool('onboarding_complete') ?? false;
 
           if (!onboardingComplete) {
             return const OnboardingScreen();

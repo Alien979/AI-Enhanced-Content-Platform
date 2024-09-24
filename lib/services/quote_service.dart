@@ -17,7 +17,7 @@ class QuoteService {
       if (quoteSnapshot.docs.isNotEmpty) {
         var latestQuote = quoteSnapshot.docs.first;
         var timestamp = latestQuote['timestamp'] as Timestamp;
-        if (timestamp.toDate().isAfter(DateTime.now().subtract(Duration(hours: 1)))) {
+        if (timestamp.toDate().isAfter(DateTime.now().subtract(const Duration(hours: 1)))) {
           // Return the existing quote if it's less than 1 hour old
           return latestQuote['text'];
         }

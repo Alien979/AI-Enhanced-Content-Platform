@@ -1,5 +1,3 @@
-// lib/screens/login_screen.dart
-
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 
@@ -29,8 +27,8 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Form(
           key: _formKey,
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              const SizedBox(height: 20.0),
               TextFormField(
                 decoration: InputDecoration(
                   hintText: 'Email',
@@ -64,7 +62,7 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 20.0),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
+                  backgroundColor: Theme.of(context).primaryColor,
                   padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 10),
                 ),
                 onPressed: () async {
@@ -73,7 +71,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     if (result == null) {
                       setState(() => error = 'Could not sign in with those credentials');
                     } else {
-                      Navigator.pushReplacementNamed(context, '/');
+                      Navigator.pushReplacementNamed(context, '/home');
                     }
                   }
                 },

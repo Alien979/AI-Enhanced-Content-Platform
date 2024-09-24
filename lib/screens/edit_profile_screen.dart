@@ -14,6 +14,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   
   late TextEditingController _displayNameController;
   late TextEditingController _bioController;
+  String? _photoURL;
   
   bool _isLoading = true;
 
@@ -33,12 +34,22 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   Future<void> _loadUserData() async {
-    final userData = await _userService.getUserData();
-    setState(() {
-      _displayNameController.text = userData['displayName'] ?? '';
-      _bioController.text = userData['bio'] ?? '';
-      _isLoading = false;
-    });
+    setState(() => _isLoading = true);
+    try {
+      final userData = await _userService.getUserData();
+      setState(() {
+        _displayNameController.text = userData['displayName'] ?? '';
+        _bioController.text = userData['bio'] ?? '';
+        _photoURL = userData['photoURL'];
+        _isLoading = false;
+      });
+    } catch (e) {
+      print('Error loading user data: $e');
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to load user data. Please try again.')),
+      );
+    }
   }
 
   @override
@@ -79,8 +90,25 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   void _saveChanges() async {
     if (_formKey.currentState!.validate()) {
-      await _userService.updateUserProfile(_displayNameController.text, _bioController.text);
-      Navigator.pop(context);
+      setState(() => _isLoading = true);
+      try {
+        await _userService.updateUserProfile(
+          _displayNameController.text, 
+          _bioController.text,
+          _photoURL
+        );
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Profile updated successfully')),
+        );
+      } catch (e) {
+        print('Error updating profile: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to update profile. Please try again.')),
+        );
+      } finally {
+        setState(() => _isLoading = false);
+      }
     }
   }
 }

@@ -9,7 +9,7 @@ import 'book_writing_guide_screen.dart';
 class BookConfigScreen extends StatefulWidget {
   final String? bookId;
 
-  const BookConfigScreen({Key? key, this.bookId}) : super(key: key);
+  const BookConfigScreen({super.key, this.bookId});
 
   @override
   _BookConfigScreenState createState() => _BookConfigScreenState();

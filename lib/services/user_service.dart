@@ -14,12 +14,13 @@ class UserService {
     return {};
   }
 
-  Future<void> updateUserProfile(String displayName, String bio) async {
+  Future<void> updateUserProfile(String displayName, String bio, String? photoURL) async {
     final user = _auth.currentUser;
     if (user != null) {
       await _firestore.collection('users').doc(user.uid).update({
         'displayName': displayName,
         'bio': bio,
+        if (photoURL != null) 'photoURL': photoURL,
       });
     }
   }
@@ -54,5 +55,13 @@ class UserService {
         'readingProgress.$today': FieldValue.increment(pagesRead),
       });
     }
+  }
+
+  Stream<DocumentSnapshot> getUserStream() {
+    final user = _auth.currentUser;
+    if (user != null) {
+      return _firestore.collection('users').doc(user.uid).snapshots();
+    }
+    throw Exception('User not logged in');
   }
 }

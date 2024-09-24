@@ -14,7 +14,7 @@ class AIService {
   }) async {
     try {
       // Limit the context to avoid exceeding token limits
-      final int maxContextLength = 2000; // Adjust this value based on your needs
+      const int maxContextLength = 2000; // Adjust this value based on your needs
       String fullContext = '';
 
       // Add current chapter first
@@ -105,6 +105,6 @@ Do not repeat information already provided. Focus on moving the story forward or
 
   static String _summarizeText(String text, {int maxLength = 200}) {
     if (text.length <= maxLength) return text;
-    return text.substring(0, maxLength) + '...';
+    return '${text.substring(0, maxLength)}...';
   }
 }

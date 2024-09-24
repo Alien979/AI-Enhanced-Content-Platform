@@ -4,7 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'book_reader_screen.dart';
 
 class LibraryScreen extends StatefulWidget {
-  const LibraryScreen({Key? key}) : super(key: key);
+  const LibraryScreen({super.key});
 
   @override
   _LibraryScreenState createState() => _LibraryScreenState();
@@ -16,11 +16,26 @@ class _LibraryScreenState extends State<LibraryScreen> {
   String _selectedGenre = 'All';
   String _selectedAudience = 'All';
   String _selectedLanguage = 'All';
-  List<String> _selectedTags = [];
+  final List<String> _selectedTags = [];
 
   List<String> _genres = ['All'];
-  List<String> _audiences = ['All', 'General', 'Children', 'Young Adult', 'Adult'];
-  List<String> _languages = ['All', 'English', 'Spanish', 'French', 'German', 'Chinese', 'Japanese', 'Other'];
+  final List<String> _audiences = [
+    'All',
+    'General',
+    'Children',
+    'Young Adult',
+    'Adult'
+  ];
+  final List<String> _languages = [
+    'All',
+    'English',
+    'Spanish',
+    'French',
+    'German',
+    'Chinese',
+    'Japanese',
+    'Other'
+  ];
   List<String> _allTags = [];
 
   @override
@@ -30,12 +45,22 @@ class _LibraryScreenState extends State<LibraryScreen> {
     _loadTags();
   }
 
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
   void _loadGenres() async {
     try {
       var genresSnapshot = await _firestore.collection('genres').get();
-      setState(() {
-        _genres = ['All', ...genresSnapshot.docs.map((doc) => doc['name'] as String)];
-      });
+      if (mounted) {
+        setState(() {
+          _genres = [
+            'All',
+            ...genresSnapshot.docs.map((doc) => doc['name'] as String)
+          ];
+        });
+      }
     } catch (e) {
       print('Error loading genres: $e');
     }
@@ -44,9 +69,12 @@ class _LibraryScreenState extends State<LibraryScreen> {
   void _loadTags() async {
     try {
       var tagsSnapshot = await _firestore.collection('tags').get();
-      setState(() {
-        _allTags = tagsSnapshot.docs.map((doc) => doc['name'] as String).toList();
-      });
+      if (mounted) {
+        setState(() {
+          _allTags =
+              tagsSnapshot.docs.map((doc) => doc['name'] as String).toList();
+        });
+      }
     } catch (e) {
       print('Error loading tags: $e');
     }
@@ -78,23 +106,36 @@ class _LibraryScreenState extends State<LibraryScreen> {
                 }
 
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return const Center(child: Text('No public books available.'));
+                  return const Center(
+                      child: Text('No public books available.'));
                 }
 
                 var books = snapshot.data!.docs;
                 books = books.where((book) {
                   var data = book.data() as Map<String, dynamic>;
-                  bool matchesSearch = data['title'].toString().toLowerCase().contains(_searchQuery.toLowerCase());
-                  bool matchesGenre = _selectedGenre == 'All' || data['genre'] == _selectedGenre;
-                  bool matchesAudience = _selectedAudience == 'All' || data['targetAudience'] == _selectedAudience;
-                  bool matchesLanguage = _selectedLanguage == 'All' || data['language'] == _selectedLanguage;
-                  bool matchesTags = _selectedTags.isEmpty || 
-                    (data['tags'] as List<dynamic>).any((tag) => _selectedTags.contains(tag));
-                  return matchesSearch && matchesGenre && matchesAudience && matchesLanguage && matchesTags;
+                  bool matchesSearch = data['title']
+                      .toString()
+                      .toLowerCase()
+                      .contains(_searchQuery.toLowerCase());
+                  bool matchesGenre = _selectedGenre == 'All' ||
+                      data['genre'] == _selectedGenre;
+                  bool matchesAudience = _selectedAudience == 'All' ||
+                      data['targetAudience'] == _selectedAudience;
+                  bool matchesLanguage = _selectedLanguage == 'All' ||
+                      data['language'] == _selectedLanguage;
+                  bool matchesTags = _selectedTags.isEmpty ||
+                      (data['tags'] as List<dynamic>)
+                          .any((tag) => _selectedTags.contains(tag));
+                  return matchesSearch &&
+                      matchesGenre &&
+                      matchesAudience &&
+                      matchesLanguage &&
+                      matchesTags;
                 }).toList();
 
                 if (books.isEmpty) {
-                  return const Center(child: Text('No books match your search criteria.'));
+                  return const Center(
+                      child: Text('No books match your search criteria.'));
                 }
 
                 return _buildBookGrid(books);
@@ -133,7 +174,10 @@ class _LibraryScreenState extends State<LibraryScreen> {
         DropdownButtonFormField<String>(
           decoration: const InputDecoration(labelText: 'Genre'),
           value: _selectedGenre,
-          items: _genres.map((genre) => DropdownMenuItem(value: genre, child: Text(genre))).toList(),
+          items: _genres
+              .map(
+                  (genre) => DropdownMenuItem(value: genre, child: Text(genre)))
+              .toList(),
           onChanged: (value) {
             setState(() {
               _selectedGenre = value!;
@@ -143,7 +187,10 @@ class _LibraryScreenState extends State<LibraryScreen> {
         DropdownButtonFormField<String>(
           decoration: const InputDecoration(labelText: 'Target Audience'),
           value: _selectedAudience,
-          items: _audiences.map((audience) => DropdownMenuItem(value: audience, child: Text(audience))).toList(),
+          items: _audiences
+              .map((audience) =>
+                  DropdownMenuItem(value: audience, child: Text(audience)))
+              .toList(),
           onChanged: (value) {
             setState(() {
               _selectedAudience = value!;
@@ -153,7 +200,10 @@ class _LibraryScreenState extends State<LibraryScreen> {
         DropdownButtonFormField<String>(
           decoration: const InputDecoration(labelText: 'Language'),
           value: _selectedLanguage,
-          items: _languages.map((language) => DropdownMenuItem(value: language, child: Text(language))).toList(),
+          items: _languages
+              .map((language) =>
+                  DropdownMenuItem(value: language, child: Text(language)))
+              .toList(),
           onChanged: (value) {
             setState(() {
               _selectedLanguage = value!;
@@ -162,19 +212,21 @@ class _LibraryScreenState extends State<LibraryScreen> {
         ),
         Wrap(
           spacing: 8,
-          children: _allTags.map((tag) => FilterChip(
-            label: Text(tag),
-            selected: _selectedTags.contains(tag),
-            onSelected: (selected) {
-              setState(() {
-                if (selected) {
-                  _selectedTags.add(tag);
-                } else {
-                  _selectedTags.remove(tag);
-                }
-              });
-            },
-          )).toList(),
+          children: _allTags
+              .map((tag) => FilterChip(
+                    label: Text(tag),
+                    selected: _selectedTags.contains(tag),
+                    onSelected: (selected) {
+                      setState(() {
+                        if (selected) {
+                          _selectedTags.add(tag);
+                        } else {
+                          _selectedTags.remove(tag);
+                        }
+                      });
+                    },
+                  ))
+              .toList(),
         ),
       ],
     );
@@ -184,10 +236,10 @@ class _LibraryScreenState extends State<LibraryScreen> {
     return GridView.builder(
       padding: const EdgeInsets.all(8.0),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
+        crossAxisCount: 4, // Increased to 4 books per row
         childAspectRatio: 0.7,
-        crossAxisSpacing: 8,
-        mainAxisSpacing: 8,
+        crossAxisSpacing: 4, // Reduced spacing
+        mainAxisSpacing: 4, // Reduced spacing
       ),
       itemCount: books.length,
       itemBuilder: (context, index) {
@@ -215,31 +267,37 @@ class _LibraryScreenState extends State<LibraryScreen> {
                   ? CachedNetworkImage(
                       imageUrl: book['coverImage'],
                       fit: BoxFit.cover,
-                      placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
+                      placeholder: (context, url) =>
+                          const Center(child: CircularProgressIndicator()),
                       errorWidget: (context, url, error) => Container(
                         color: Colors.grey[300],
-                        child: Icon(Icons.book, size: 40, color: Colors.grey[600]),
+                        child:
+                            Icon(Icons.book, size: 40, color: Colors.grey[600]),
                       ),
                     )
                   : Container(
                       color: Colors.grey[300],
-                      child: Icon(Icons.book, size: 40, color: Colors.grey[600]),
+                      child:
+                          Icon(Icons.book, size: 40, color: Colors.grey[600]),
                     ),
             ),
             Padding(
-              padding: const EdgeInsets.all(4.0),
+              padding: const EdgeInsets.all(2.0), // Reduced padding
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     book['title'] ?? 'Untitled',
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 10), // Smaller font
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   Text(
                     book['authorName'] ?? 'Unknown author',
-                    style: TextStyle(fontSize: 10, color: Colors.grey[600]),
+                    style: TextStyle(
+                        fontSize: 8, color: Colors.grey[600]), // Smaller font
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
