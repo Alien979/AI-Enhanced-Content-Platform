@@ -7,7 +7,7 @@ class HomeScreen extends StatelessWidget {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  const HomeScreen({super.key});
+  HomeScreen({super.key}); // Removed the 'const' keyword
 
   @override
   Widget build(BuildContext context) {
@@ -238,7 +238,7 @@ class HomeScreen extends StatelessWidget {
               var bookData = snapshot.data!.docs[index].data() as Map<String, dynamic>?;
 
               if (bookData == null) {
-                return const SizedBox.shrink(); // Skip this item if data is null
+                return const SizedBox.shrink();
               }
 
               String title = bookData['title'] as String? ?? 'Untitled';
@@ -316,7 +316,7 @@ class HomeScreen extends StatelessWidget {
               var bookData = snapshot.data!.docs[index].data() as Map<String, dynamic>?;
 
               if (bookData == null) {
-                return const SizedBox.shrink(); // Skip this item if data is null
+                return const SizedBox.shrink();
               }
 
               String title = bookData['title'] as String? ?? 'Untitled';
@@ -373,7 +373,7 @@ class HomeScreen extends StatelessWidget {
         'summary': summary,
         'genre': genre,
         'authorId': _auth.currentUser!.uid,
-        'coverUrl': 'https://via.placeholder.com/120x160', // Default cover
+        'coverUrl': 'https://via.placeholder.com/120x160',
         'chapterCount': 0,
         'status': 'in_progress',
         'createdAt': FieldValue.serverTimestamp(),
