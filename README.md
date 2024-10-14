@@ -1,4 +1,4 @@
-# ai_book_writing_platform
+# AI Enhanced Content Platform
 
 A new Flutter project.
 
