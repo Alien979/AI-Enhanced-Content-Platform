@@ -1,4 +1,4 @@
-name: Build and Test
+name: Flutter CI
 
 on:
   push:
@@ -18,7 +18,7 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: 'latest'  # Install the latest stable version with Dart 3.5.0 or above
+          flutter-version: '3.13.0'  # Specify Flutter version compatible with Dart ^3.5.0
           channel: stable
 
       - name: Install dependencies
